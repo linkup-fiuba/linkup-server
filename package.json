@@ -1,0 +1,9 @@
+{
+  "name": "LinkUpApp",
+  "main": "app.js",
+  "dependencies": {
+    "async": "^2.5.0",
+    "body-parser": "~1.0.1",
+    "express": "^4.9.5"
+  }
+}
