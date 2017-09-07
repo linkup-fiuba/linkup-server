@@ -9,6 +9,15 @@ function getUser(userId, callback) {
 	})
 }
 
+// limit para paginacion
+function getUsers(limit, callback) {
+	redisLib.getHash(userKey, function(err,response) {
+		if (err) callback(err, null);
+		return callback(null, response);
+	})
+}
+
+
 function createUser(userId, user, callback) {
 	redisLib.setHash(userKey+userId, user);
 	return callback(user);
