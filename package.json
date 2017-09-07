@@ -4,6 +4,7 @@
   "dependencies": {
     "async": "^2.5.0",
     "body-parser": "~1.0.1",
-    "express": "^4.9.5"
+    "express": "^4.9.5",
+    "redis": "^2.8.0"
   }
 }
