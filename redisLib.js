@@ -16,21 +16,32 @@ client.on('connect', function() {
 });
 
 
-function set(key, value) {
-	client.set(key, value);
-	return;
+function set(key, value, callback) {
+	client.set(key, value, function (err, reply) {
+		if (err) return callback(err, null);
+		return callback(null, reply);
+	});
 }
 
 function get(key, callback) {
-	client.get(key, function(err, reply) {
+	client.get(key, function(err, response) {
 		if (err) callback(err, null);
-		return callback(null, reply);    
-	})
+		return callback(null, response);    
+	});
 }
 
-function setHash(key, value) {
-	client.hmset(key, value);
-	return;
+function setHash(key, value, callback) {
+	client.hmset(key, value, function (err, reply) {
+		if (err) return callback(err, null);
+		return callback(null, reply)
+	});
+}
+
+function setHashField(key, field, value, callback) {
+	client.hset(key, field, value, function (err, reply) {
+		if (err) return callback(err, null);
+		return callback(null, reply)
+	});
 }
 
 function getHash(key, callback) {
@@ -53,5 +64,6 @@ module.exports = {
 	get: get,
 	getHash: getHash,
 	setHash: setHash,
+	setHashField: setHashField,
 	deleteKey: deleteKey
 }
