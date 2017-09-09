@@ -13,7 +13,6 @@ function getUser(userId, callback) {
 // limit para paginacion
 function getUsers(callback) {
 	redisLib.getHash(userKey, function(err, response) {
-		console.log(response);
 		if (err) callback(err, null);
 		return callback(null, response);
 	})
@@ -31,17 +30,16 @@ function createUser(userId, user, callback) {
 function updateUser(userId, userUpdate, callback) {
 	redisLib.getHash(userKey+userId, function(error, user) {
 		if (error) return callback (error, null);
-		updateFieldUser(user, userUpdate, function (err, response) {
-			console.log("updateFieldUser finished");
-			console.log(response);
-			if (err) callback(err, null);
-			return callback(null, response);
-		})
+		if (user) {
+			updateFieldUser(user, userUpdate, function (err, response) {
+				if (err) callback(err, null);
+				return callback(null, response);
+			})
+		} else {
+			return callback(null, null);
+		}
 
 	});
-	//get Old and update new fields
-	//redisLib.setHash(userKey+userId, user);
-	//return callback(user);
 }
 
 function deleteUser(userId, callback) {
@@ -60,7 +58,6 @@ function updateFieldUser(user, userUpdate, cbUpdate) {
 			if (err) return cbUpdate(err, null);
 			callback();
 		});
-	    // tell async that that particular element of the iterator is done
 
 	}, function(err) {
 		if (err) return cbUpdate(err, null);
