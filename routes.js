@@ -97,11 +97,17 @@ function createUserRoutes(router) {
 							data: err
 						});
 					}
-			    	res.json({
-						statusCode: 200,
-						data: response
-					});
-					
+					if (!response) {
+						res.json({
+							statusCode: 404,
+							data: "User already exists"
+						});	
+					} else {
+				    	res.json({
+							statusCode: 200,
+							data: response
+						});
+					}
 				});
 				
 			})
@@ -109,7 +115,7 @@ function createUserRoutes(router) {
 
 	router.route('/test')
 		.get(function(req,res) {
-			redisLib.get("test", function(error, reply) {
+			redisLib.exists("user_101526692901751231", function(error, reply) {
 				if (reply) {
 					res.json({
 						statusCode: 200,

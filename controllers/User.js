@@ -20,10 +20,16 @@ function getUsers(callback) {
 
 
 function createUser(userId, user, callback) {
-	redisLib.setHash(userKey+userId, user, function (err, response) {
-		if (err) return callback(err, null);
-		return callback(null, response);
-	}); 
+	redisLib.exists(userKey+userId, function(err, exists) {
+		if (exists) {
+			return callback(null, null);
+		} else {
+			redisLib.setHash(userKey+userId, user, function (err, response) {
+				if (err) return callback(err, null);
+				return callback(null, response);
+			}); 		
+		}
+	})
 }
 
 
