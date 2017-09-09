@@ -44,6 +44,13 @@ function setHashField(key, field, value, callback) {
 	});
 }
 
+function getHashField(key, field, callback) {
+	client.hget(key, field, function (err, reply) {
+		if (err) return callback(err, null);
+		return callback(null, reply)
+	});
+}
+
 function getHash(key, callback) {
 	client.hgetall(key, function(err, reply) {
 		if (err) callback(err, null);
@@ -58,6 +65,14 @@ function deleteKey(key, callback) {
 	});
 }
 
+function exists(key, callback) {
+	client.exists(key, function (err, reply) {
+		console.log(reply);
+		if (err) return callback(err, null);
+		return callback(null, reply);
+	})
+}
+
 
 module.exports = {
 	set: set,
@@ -65,5 +80,7 @@ module.exports = {
 	getHash: getHash,
 	setHash: setHash,
 	setHashField: setHashField,
-	deleteKey: deleteKey
+	getHashField: getHashField,
+	deleteKey: deleteKey,
+	exists: exists
 }
