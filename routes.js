@@ -42,19 +42,26 @@ function createUserRoutes(router) {
 	    	})
 	    })
 	    .put(function(req, res) {
-	    	console.log("update user");
 	    	Users.updateUser(req.params.user_id, req.body, function (err, response) {
 	    		if (err) {
-	    			console.log(err);
 	    			res.json({
 	    				statusCode: 500,
 	    				data: err
 	    			});
 	    		}
-		    	res.json({
-					statusCode: 200,
-					data: response
-				});
+
+	    		if (!response) {
+	    			res.json({
+						statusCode: 404,
+						data: "User "+req.params.user_id+" not found"
+					});
+	    		} else {
+			    	res.json({
+						statusCode: 200,
+						data: response
+					});
+	    		}
+
 	    	});
 	    }) 
 	    .delete(function(req, res) {
@@ -99,22 +106,6 @@ function createUserRoutes(router) {
 				
 			})
 		})
-		.get(function(req,res) {
-			Users.getUsers(function (err, response) {
-				if (err) {
-					res.json({
-						statusCode: 500,
-						data: err
-					});	
-				}
-				console.log("get all users");
-				res.json({
-					statusCode: 200,
-					data: response
-				});
-				
-			})
-		});
 
 	router.route('/test')
 		.get(function(req,res) {
