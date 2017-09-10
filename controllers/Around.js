@@ -22,15 +22,11 @@ function createAroundUser(userId, callbackAround) {
 	    	//get info of my user
 	    	redisLib.getHash(config.usersKey+userId, function (err, user) {
 	    		if (err) return callbackAround(err, null);
-	    		console.log("user 1");
-	    		console.log(user);
 	    		if (!user) {
 	    			return callbackAround(null, null);
 	    		}
 	    		redisLib.getHashField(config.preferencesKey+userId, 'gender', function (err, userGenderPreferences) {
 					if (err) return callbackAround(err, null);
-					console.log("userGenderPreferences");
-					console.log(userGenderPreferences);
 					callback(null, user ,userGenderPreferences);
 				});
 	    	});
@@ -39,27 +35,16 @@ function createAroundUser(userId, callbackAround) {
 	    	//obtengo todos los ids de los usuarios de preferencia del user actual
 	    	redisLib.getFromSet(config.genderKey+userGenderPreferences, function (err, usersIds) {
 				if (err) callbackAround(err, null);
-				console.log("usersIds");
-				console.log(usersIds);
-				console.log("user 2");
-	    		console.log(user);
 				callback(null, user, userGenderPreferences, usersIds);
 			});
 	    },
 	    function (user, userGenderPreferences, usersIds, callback) {
-		    console.log("user 3");
-	    	console.log(user);
 		    async.each(usersIds, function (id, callbackIt) {
 				if (userId == id) {
-					console.log("SAME USER");
 					return callbackIt();
 				}
-				console.log("id");
-				console.log(id);
 				async.waterfall([
 					function (cb) {
-						console.log("user 4");
-	    				console.log(user);
 						redisLib.getHash(config.usersKey+id, function (err, otherUser) {
 							if (err) return callbackAround(err, null);
 							cb(null, user, otherUser);
@@ -68,12 +53,6 @@ function createAroundUser(userId, callbackAround) {
 				    function (user, otherUser, cb) {
 				    	//obtengo la preferencia del otro user
 				    	redisLib.getHashField(config.preferencesKey+id, 'gender', function (err, userPref) {
-				    		console.log("USER");
-				    		console.log(user);
-				    		console.log("OTHER USER");
-				    		console.log(otherUser);
-				    		console.log("userGenderPreferences");
-				    		console.log(userGenderPreferences);
 				    		//valido si puede haber match
 				    		validatePossibleAround(user.gender, userGenderPreferences, otherUser.gender, userPref, function (validate) {
 				    			if (validate) {
@@ -109,10 +88,8 @@ function createAroundUser(userId, callbackAround) {
 						};
 						//save info of around 
 						redisLib.setHash(config.aroundKey+userId+':'+id, userModel, function (err, responseSave) {
-							console.log(responseSave);
 							if (err) return callbackAround(err, null);
 							redisLib.setHash(config.aroundKey+id+':'+userId, actualUserModel, function (err, responseSave) {
-								console.log(responseSave);
 								if (err) return callbackAround(err, null);
 								callbackIt();
 							})

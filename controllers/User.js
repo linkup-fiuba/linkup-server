@@ -86,7 +86,6 @@ function deleteUser(userId, callbackDelete) {
 	    },
 	    function removeFromAround(callback) {
 	    	redisLib.keys(config.aroundKey+'*', function(err, aroundKeyIds) {
-	    		console.log(aroundKeyIds);
 	    		async.each(aroundKeyIds, function (key, cb) {
 					redisLib.deleteKey(key, function(err, response) {
 						if (err) callbackDelete(err, null);
