@@ -15,131 +15,151 @@ function getAroundUsers(userId, callback) {
 	})
 }
 
-function createAroundUser(userId, callback) {
+function createAroundUser(userId, callbackAround) {
 	var responseSave = 0;
-	/*async.waterfall([
-	    function removeFromUser(callback) {
-	    	redisLib.deleteKey(config.usersKey+userId, function(err, response) {
-				if (err) callbackDelete(err, null);
-				callback(null);
-			});
-	    },
-	    function removeFromPreferences(callback) {
-	    	redisLib.deleteKey(config.preferencesKey+userId, function(err, response) {
-				if (err) callbackDelete(err, null);
-				callback(null);
-			});
-	    },
-	    function removeFromGender(callback) {
-	    	redisLib.removeFromSet(config.genderKey+'male', userId, function(err, response) {
-				if (err) callbackDelete(err, null);
-				redisLib.removeFromSet(config.genderKey+'female', userId, function(err, response) {
-					if (err) callbackDelete(err, null);
-					redisLib.removeFromSet(config.genderKey+'both', userId, function(err, response) {
-						if (err) callbackDelete(err, null);
-						return callback(null);
-					});
-				});
-			
-			});
-	    },
-	    function removeFromAround(callback) {
-	    	redisLib.keys(config.aroundKey+'*', function(err, aroundKeyIds) {
-	    		console.log(aroundKeyIds);
-	    		async.each(aroundKeyIds, function (key, cb) {
-					redisLib.deleteKey(key, function(err, response) {
-						if (err) callbackDelete(err, null);
-						return cb();
-					});
-				}, function finish(err) {
-					callback(null);
+	async.waterfall([
+	    function (callback) {
+	    	//get info of my user
+	    	redisLib.getHash(config.usersKey+userId, function (err, user) {
+	    		if (err) return callbackAround(err, null);
+	    		console.log("user 1");
+	    		console.log(user);
+	    		if (!user) {
+	    			return callbackAround(null, null);
+	    		}
+	    		redisLib.getHashField(config.preferencesKey+userId, 'gender', function (err, userGenderPreferences) {
+					if (err) return callbackAround(err, null);
+					console.log("userGenderPreferences");
+					console.log(userGenderPreferences);
+					callback(null, user ,userGenderPreferences);
 				});
 	    	});
+	    },
+	    function getUserList(user, userGenderPreferences, callback) {
+	    	//obtengo todos los ids de los usuarios de preferencia del user actual
+	    	redisLib.getFromSet(config.genderKey+userGenderPreferences, function (err, usersIds) {
+				if (err) callbackAround(err, null);
+				console.log("usersIds");
+				console.log(usersIds);
+				console.log("user 2");
+	    		console.log(user);
+				callback(null, user, userGenderPreferences, usersIds);
+			});
+	    },
+	    function (user, userGenderPreferences, usersIds, callback) {
+		    console.log("user 3");
+	    	console.log(user);
+		    async.each(usersIds, function (id, callbackIt) {
+				if (userId == id) {
+					console.log("SAME USER");
+					return callbackIt();
+				}
+				console.log("id");
+				console.log(id);
+				async.waterfall([
+					function (cb) {
+						console.log("user 4");
+	    				console.log(user);
+						redisLib.getHash(config.usersKey+id, function (err, otherUser) {
+							if (err) return callbackAround(err, null);
+							cb(null, user, otherUser);
+						});
+					},
+				    function (user, otherUser, cb) {
+				    	//obtengo la preferencia del otro user
+				    	redisLib.getHashField(config.preferencesKey+id, 'gender', function (err, userPref) {
+				    		console.log("USER");
+				    		console.log(user);
+				    		console.log("OTHER USER");
+				    		console.log(otherUser);
+				    		console.log("userGenderPreferences");
+				    		console.log(userGenderPreferences);
+				    		//valido si puede haber match
+				    		validatePossibleAround(user.gender, userGenderPreferences, otherUser.gender, userPref, function (validate) {
+				    			if (validate) {
+				    				//agrego a la lista de los around
+				    				redisLib.addToSet(config.aroundKey+userId, id, function (err, reply) {
+				    					if (err) return callbackAround(err, null);
+										redisLib.addToSet(config.aroundKey+id, userId, function(err, reply) {
+											if (err) return callbackAround(err, null);
+											cb(null, otherUser);
+										});
+									});
+				    			} else {
+				    				callbackIt();
+				    			}
+				    		})
+				    	});
+				    }, 
+				    function (otherUser, cb) {
+				    	var userModel = {
+							id: id,
+							userName: otherUser.userName,
+							description: otherUser.description,
+							picture: otherUser.picture,
+							compatibility: 1
+						};
+
+						var actualUserModel = {
+							id: id,
+							userName: user.userName,
+							description: user.description,
+							picture: user.picture,
+							compatibility: 1
+						};
+						//save info of around 
+						redisLib.setHash(config.aroundKey+userId+':'+id, userModel, function (err, responseSave) {
+							console.log(responseSave);
+							if (err) return callbackAround(err, null);
+							redisLib.setHash(config.aroundKey+id+':'+userId, actualUserModel, function (err, responseSave) {
+								console.log(responseSave);
+								if (err) return callbackAround(err, null);
+								callbackIt();
+							})
+						})
+				    }
+				], function (error) {
+					//fin segundo waterfall
+				    if (error) {
+				    	return callback(error, null);
+				    }
+				 
+				    callback(responseSave);
+				});
+			}, function finish(err) {
+				//fin foreach
+				if (err) return callbackAround(err, null);
+				callback(null);
+			});
 	    }
 	], function (error) {
+		// fin primer waterfall
 	    if (error) {
-	    	return callbackDelete(error, null);
+	    	return callbackAround(error, null);
 	    }
-	    callbackDelete(null, "OK");
-	});*/
-	redisLib.getHash(config.usersKey+userId, function (err, user) {
-		// get possible matches by gender
-	redisLib.getHashField(config.preferencesKey+userId, 'gender', function (err, userPreferences) {
-		if (err) return callback(err, null);
-		console.log("userPreferences");
-		console.log(userPreferences);
-		async.waterfall([
-		    function getUserList(cb) {
-		    	redisLib.getFromSet(config.genderKey+userPreferences, function (err, usersIds) {
-					if (err) callback(err, null);
-					console.log("usersIds");
-					console.log(usersIds);
-					cb(null, usersIds);
-				});
-		    },
-		    function parseUsers(usersIds, cb) {
-		    	console.log("aqui");
-		    	console.log(usersIds);
-				async.each(usersIds, function (id, callbackIt) {
-					if (userId == id) {
-						console.log("SAME USER");
-						return callbackIt();
-					}
-					console.log("id");
-					console.log(id);
-					redisLib.getHashField(config.preferencesKey+id, 'gender', function (err, userPref) {
-						if ((userPreferences == 'male' && userPref == 'female') || (userPreferences == 'female' && userPref == 'male')
-						 	|| (userPreferences == 'male' && userPref == 'male')  || (userPreferences == 'female' && userPref == 'female') 
-						 	|| (userPreferences == 'both' && userPref == 'both')) {
-
-							redisLib.addToSet(config.aroundKey+userId, id, function (err, reply) {
-								redisLib.addToSet(config.aroundKey+id, userId, function(err, reply) {
-									if (err) return callback(err, null);
-									redisLib.getHash(config.usersKey+id, function (err, userSave) {
-										console.log("userSave");
-										console.log(userSave);
-										if (err) return callback(err, null);
-										var userModel = {
-											id: id,
-											userName: userSave.userName,
-											description: userSave.description,
-											picture: userSave.picture,
-											compatibility: 1
-										};
-										redisLib.setHash(config.aroundKey+userId+':'+id, userModel, function (err, responseSave) {
-											console.log(responseSave);
-											if (err) return callback(err, null);
-											redisLib.setHash(config.aroundKey+id+':'+userId, user, function (err, responseSave) {
-												console.log(responseSave);
-												if (err) return callback(err, null);
-													
-
-												callbackIt();
-											})
-										})
-									})
-								})
-							});
-						}
-					});
-
-				}, function finish(err) {
-					if (err) return cb(err);
-					cb(null);
-				});
-
-		    }
-		], function (error) {
-		    if (error) {
-		    	return callback(error, null);
-		    }
-		 
-		    callback(responseSave);
-		});
-
-	})
+	    callbackAround(null, "OK");
 	});
-	
+}
+
+//para hacerlo mas generico podria pasar los users y las pref completas
+
+function validatePossibleAround(userGender, userGenderPreferences, otherUserGender, otherUserGenderPref, callback) {
+	if (userGender == 'male' && userGenderPreferences == 'male' && otherUserGender == 'male' && otherUserGenderPref == 'male') {
+		return callback(true);
+	} else if (userGender == 'male' && userGenderPreferences == 'female' && otherUserGender == 'female' && otherUserGenderPref == 'male') {
+		return callback(true);
+	} else if (userGender == 'male' && userGenderPreferences == 'both' && otherUserGenderPref == 'both') {
+		return callback(true);
+	} else if (userGender == 'female' && userGenderPreferences == 'male' && otherUserGender == 'male' && otherUserGenderPref == 'female') {
+		return callback(true);
+	} else if (userGender == 'female' && userGenderPreferences == 'female' && otherUserGender == 'female' && otherUserGenderPref == 'female') {
+		return callback(true);
+	} else if (userGender == 'female' && userGenderPreferences == 'both' && otherUserGenderPref == 'both') {
+		return callback(true);
+	} else {
+		callback(false);
+	}
+
 }
 
 function deleteAroundUser(userId, userIdRemove, callbackDelete) {

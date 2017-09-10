@@ -96,6 +96,11 @@ function parsePreferences(userId, preferences, callbackPreferences) {
 
 }
 
+
+function removePreferences(userId) {
+	
+}
+
 module.exports = {
 	getPreferences: getPreferences,
 	createPreferences: createPreferences,
