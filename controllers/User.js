@@ -1,11 +1,11 @@
 'use strict';
 var async 		= require('async');
 var redisLib 	= require('../redisLib');
-
-var userKey = 'user_';
+var config	 	= require('../config');
+var Preferences = require('./Preferences')
 
 function getUser(userId, callback) {
-	redisLib.getHash(userKey+userId, function(err,response) {
+	redisLib.getHash(config.usersKey+userId, function(err,response) {
 		if (err) callback(err, null);
 		return callback(null, response);
 	})
@@ -13,7 +13,7 @@ function getUser(userId, callback) {
 
 // limit para paginacion
 function getUsers(callback) {
-	redisLib.getHash(userKey, function(err, response) {
+	redisLib.getHash(config.usersKey, function(err, response) {
 		if (err) callback(err, null);
 		return callback(null, response);
 	})
@@ -21,21 +21,29 @@ function getUsers(callback) {
 
 
 function createUser(userId, user, callback) {
-	redisLib.exists(userKey+userId, function(err, exists) {
+	redisLib.exists(config.usersKey+userId, function(err, exists) {
 		if (exists) {
 			return callback(null, null);
 		} else {
-			redisLib.setHash(userKey+userId, user, function (err, response) {
-				if (err) return callback(err, null);
-				return callback(null, response);
-			}); 		
+			redisLib.addToSet(config.genderKey+user.gender, userId, function (err, reply) {
+				if (err) callback (err, null);
+				redisLib.addToSet(config.genderKey+config.bothKey, userId, function (err, reply) {
+					if (err) callback(err, null);
+
+				});
+				redisLib.setHash(config.usersKey+userId, user, function (err, response) {
+					if (err) return callback(err, null);
+					return callback(null, response);
+				});
+			});
+
 		}
 	})
 }
 
 
 function updateUser(userId, userUpdate, callback) {
-	redisLib.getHash(userKey+userId, function(error, user) {
+	redisLib.getHash(config.usersKey+userId, function(error, user) {
 		if (error) return callback (error, null);
 		if (user) {
 			updateFieldUser(user, userUpdate, function (err, response) {
@@ -49,10 +57,51 @@ function updateUser(userId, userUpdate, callback) {
 	});
 }
 
-function deleteUser(userId, callback) {
-	redisLib.deleteKey(userKey+userId, function(err, response) {
-		if (err) callback(err, null);
-		return callback(null, response);
+function deleteUser(userId, callbackDelete) {
+	async.waterfall([
+	    function removeFromUser(callback) {
+	    	redisLib.deleteKey(config.usersKey+userId, function(err, response) {
+				if (err) callbackDelete(err, null);
+				callback(null);
+			});
+	    },
+	    function removeFromPreferences(callback) {
+	    	redisLib.deleteKey(config.preferencesKey+userId, function(err, response) {
+				if (err) callbackDelete(err, null);
+				callback(null);
+			});
+	    },
+	    function removeFromGender(callback) {
+	    	redisLib.removeFromSet(config.genderKey+'male', userId, function(err, response) {
+				if (err) callbackDelete(err, null);
+				redisLib.removeFromSet(config.genderKey+'female', userId, function(err, response) {
+					if (err) callbackDelete(err, null);
+					redisLib.removeFromSet(config.genderKey+'both', userId, function(err, response) {
+						if (err) callbackDelete(err, null);
+						return callback(null);
+					});
+				});
+			
+			});
+	    },
+	    function removeFromAround(callback) {
+	    	redisLib.keys(config.aroundKey+'*', function(err, aroundKeyIds) {
+	    		console.log(aroundKeyIds);
+	    		async.each(aroundKeyIds, function (key, cb) {
+					redisLib.deleteKey(key, function(err, response) {
+						if (err) callbackDelete(err, null);
+						return cb();
+					});
+				}, function finish(err) {
+					callback(null);
+				});
+	    	});
+	    }
+	], function (error) {
+	    if (error) {
+	    	return callbackDelete(error, null);
+	    }
+	    callbackDelete(null, "OK");
 	});
 } 
 
@@ -61,7 +110,7 @@ function updateFieldUser(user, userUpdate, cbUpdate) {
 	    if (userUpdate[userField] instanceof Array) {
 	    	userUpdate[userField] = JSON.stringify(userUpdate[userField]);
 	    }
-	    redisLib.setHashField(userKey+user.id,userField,userUpdate[userField], function (err, response) {
+	    redisLib.setHashField(config.usersKey+user.id,userField,userUpdate[userField], function (err, response) {
 			if (err) return cbUpdate(err, null);
 			callback();
 		});
@@ -93,7 +142,9 @@ function parseUser(facebookUser, callbackUser) {
 			picture: facebookUser.picture.data.url,
 			likes: JSON.stringify(likes),
 			gender: facebookUser.gender,
-			education: JSON.stringify(education)
+			education: JSON.stringify(education),
+			description: "",
+			pictures: ""
 		}
 		
 	    callbackUser(user);

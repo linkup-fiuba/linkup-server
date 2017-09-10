@@ -1,32 +1,30 @@
 'use strict';
 var async 		= require('async');
 var redisLib 	= require('../redisLib');
-
-var preferencesKey = 'preferences_';
+var config 		= require('../config');
+var Around	 	= require('./Around');
 
 function getPreferences(userId, callback) {
-	redisLib.getHash(preferencesKey+userId, function(err,response) {
+	redisLib.getHash(config.preferencesKey+userId, function(err,response) {
 		if (err) callback(err, null);
 		return callback(null, response);
 	})
 }
 
 function createPreferences(userId, preferences, callback) {
-	redisLib.exists(preferencesKey+userId, function(err, exists) {
-		if (exists) {
-			return callback(null, null);
-		} else {
-			redisLib.setHash(preferencesKey+userId, preferences, function (err, response) {
-				if (err) return callback(err, null);
-				return callback(null, response);
-			}); 		
-		}
-	})
+	redisLib.setHash(config.preferencesKey+userId, preferences, function (err, response) {
+		if (err) return callback(err, null);
+		Around.createAroundUser(userId, function (err, response) {
+		})
+		return callback(null, response);
+	}); 		
+		
+
 }
 
 
 function updatePreferences(userId, preferencesUpdate, callback) {
-	redisLib.getHash(preferencesKey+userId, function(error, preferences) {
+	redisLib.getHash(config.preferencesKey+userId, function(error, preferences) {
 		if (error) return callback (error, null);
 		if (preferences) {
 			updateFieldPreferences(preferences, preferencesUpdate, function (err, response) {
@@ -45,7 +43,7 @@ function updateFieldPreferences(preferences, preferencesUpdate, cbUpdate) {
 	    if (preferencesUpdate[preferencesField] instanceof Array) {
 	    	preferencesUpdate[preferencesField] = JSON.stringify(preferencesUpdate[preferencesField]);
 	    }
-	    redisLib.setHashField(preferencesKey+preferences.userId,preferencesField,preferencesUpdate[preferencesField], function (err, response) {
+	    redisLib.setHashField(config.preferencesKey+preferences.userId,preferencesField,preferencesUpdate[preferencesField], function (err, response) {
 			if (err) return cbUpdate(err, null);
 			callback();
 		});

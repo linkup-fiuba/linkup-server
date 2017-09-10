@@ -93,6 +93,13 @@ function getFromSet(key, callback) {
 	})
 }
 
+function keys(key, callback) {
+	client.keys(key, function (err, reply) {
+		if (err) return callback(err, null);
+		return callback(null, reply);
+	})
+}
+
 
 
 module.exports = {
@@ -106,5 +113,6 @@ module.exports = {
 	exists: exists,
 	removeFromSet: removeFromSet,
 	getFromSet: getFromSet,
-	addToSet: addToSet
+	addToSet: addToSet,
+	keys: keys
 }
