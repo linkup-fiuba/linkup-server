@@ -1,5 +1,8 @@
+'use strict';
+
 var Users 		= require('./controllers/User');
 var Preferences = require('./controllers/Preferences');
+var Around 		= require('./controllers/Around');
 var redisLib 	= require('./redisLib'); //testing
 
 
@@ -16,6 +19,7 @@ function create(router) {
 	});
 	router = createUserRoutes(router);
 	router = createUserPreferencesRoutes(router);
+	router = createUserAroundRoutes(router);
 	return router;
 }
 
@@ -203,6 +207,51 @@ function createUserPreferencesRoutes(router) {
 	    		}
 	    	})
 		})
+	return router;
+}
+
+function createUserAroundRoutes(router) {
+	router.route('/users/:user_id/around')
+		.get(function (req, res) {
+			Around.getAroundUsers(req.params.user_id, function (err, reply) {
+				if (err) {
+	    			return res.json({
+	    				statusCode: 500,
+	    				data: err
+	    			});
+	    		}
+
+	    		if (!reply) {
+	    			return res.json({
+						statusCode: 404,
+						data: "User "+req.params.user_id+" not found"
+					});
+	    		} else {
+			    	return res.json({
+						statusCode: 200,
+						data: reply
+					});
+	    		}
+			});
+		});
+	router.route('/users/:user_id/around/:user_id_remove')
+		.delete(function (req, res) {
+			Around.deleteAroundUser(req.params.user_id, req.params.user_id_remove, function (err, reply) {
+				if (err) {
+	    			return res.json({
+	    				statusCode: 500,
+	    				data: err
+	    			});
+	    		}
+	    		
+		    	return res.json({
+					statusCode: 200,
+					data: "OK"
+				});
+	    		
+	    	})
+		})
+		
 	return router;
 }
 
