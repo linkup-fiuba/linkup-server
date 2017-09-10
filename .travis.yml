@@ -2,7 +2,7 @@ services:
   - redis-server
 language: node_js
 node_js:
-- "stable"
+  - "6"
 
 script:
   - node server.js &
