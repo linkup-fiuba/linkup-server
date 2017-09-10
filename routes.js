@@ -1,5 +1,6 @@
-var Users = require('./controllers/User');
-var redisLib = require('./redisLib'); //testing
+var Users 		= require('./controllers/User');
+var Preferences = require('./controllers/Preferences');
+var redisLib 	= require('./redisLib'); //testing
 
 
 // ROUTES FOR OUR API
@@ -14,6 +15,7 @@ function create(router) {
 	    next(); // make sure we go to the next routes and don't stop here
 	});
 	router = createUserRoutes(router);
+	router = createUserPreferencesRoutes(router);
 	return router;
 }
 
@@ -61,7 +63,6 @@ function createUserRoutes(router) {
 						data: response
 					});
 	    		}
-
 	    	});
 	    }) 
 	    .delete(function(req, res) {
@@ -129,6 +130,79 @@ function createUserRoutes(router) {
 				}
 			});
 		});
+	return router;
+}
+
+function createUserPreferencesRoutes(router) {
+	router.route('/users/:user_id/preferences')
+		.post(function (req, res) {
+			Preferences.parsePreferences(req.params.user_id, req.body, function(errorParse, preferencesModel) {
+				if (errorParse) {
+					res.json({
+						statusCode: 500,
+						data: errorParse
+					});
+				} else {
+					Preferences.createPreferences(req.params.user_id, preferencesModel, function (err, response) {
+						if (err) {
+							res.json({
+								statusCode: 500,
+								data: err
+							});
+						}
+						//si ya existe lo reemplaza con el nuevo set de preferencias
+				    	res.json({
+							statusCode: 200,
+							data: response
+						});
+					});
+				}
+			})
+		})
+		.get(function (req, res) {
+			Preferences.getPreferences(req.params.user_id, function (err, reply) {
+				if (err) {
+	    			res.json({
+	    				statusCode: 500,
+	    				data: err
+	    			});
+	    		}
+
+	    		if (!reply) {
+	    			res.json({
+						statusCode: 404,
+						data: "User "+req.params.user_id+" not found"
+					});
+	    		} else {
+			    	res.json({
+						statusCode: 200,
+						data: reply
+					});
+	    		}
+			});
+		})
+		.put(function (req, res) {
+			Preferences.updatePreferences(req.params.user_id, req.body, function (err, reply) {
+				if (err) {
+	    			res.json({
+	    				statusCode: 500,
+	    				data: err
+	    			});
+	    		}
+
+	    		if (!reply) {
+	    			res.json({
+						statusCode: 404,
+						data: "User "+req.params.user_id+" not found"
+					});
+	    		} else {
+			    	res.json({
+						statusCode: 200,
+						data: reply
+					});
+	    		}
+	    	})
+		})
 	return router;
 }
 
