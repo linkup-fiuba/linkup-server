@@ -151,6 +151,8 @@ describe("LinkUp API User Test",function(){
 		.expect(200)
 		.end(function(err,res){
 			res.status.should.equal(200);
+			console.log(res.body.data);
+			console.log(userResponse);
 			JSON.stringify(res.body.data).should.equal(JSON.stringify(userResponse));
 			done();
 		});
