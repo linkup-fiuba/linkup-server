@@ -65,8 +65,9 @@ var userResponse = {
      		type: 'College' 
      	} 
      ],
-  	userName: 'Martin Gonzalez',
-  	likes: 
+  	gender: 'male',
+  	id: '1',
+    likes: 
    	[ 
    		{ 
    			name: 'Mike Chouhy' 
@@ -84,11 +85,10 @@ var userResponse = {
      	 name: 'Deporte Fiuba' 
      	} 
     ],
-  	id: '1',
-  	gender: 'male',
+  	userName: 'Martin Gonzalez',
+  	picture: 'https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2',
   	pictures: '',
- 	description: '',
-  	picture: 'https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2' 
+ 	description: ''
 }
 
 
