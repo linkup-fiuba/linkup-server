@@ -37,6 +37,13 @@ function setHash(key, value, callback) {
 	});
 }
 
+function getHash(key, callback) {
+	client.hgetall(key, function(err, reply) {
+		if (err) callback(err, null);
+		return callback(null, reply);
+	});
+}
+
 function setHashField(key, field, value, callback) {
 	client.hset(key, field, value, function (err, reply) {
 		if (err) return callback(err, null);
@@ -51,13 +58,6 @@ function getHashField(key, field, callback) {
 	});
 }
 
-function getHash(key, callback) {
-	client.hgetall(key, function(err, reply) {
-		if (err) callback(err, null);
-		return callback(null, reply);
-	});
-}
-
 function deleteKey(key, callback) {
 	client.del(key, function(err, reply) {
 		if (err) callback(err, null);
@@ -67,11 +67,39 @@ function deleteKey(key, callback) {
 
 function exists(key, callback) {
 	client.exists(key, function (err, reply) {
-		console.log(reply);
 		if (err) return callback(err, null);
 		return callback(null, reply);
 	})
 }
+
+function removeFromSet(key, member, callback) {
+	client.srem(key, member, function (err, reply) {
+		if (err) callback(err, null);
+		return callback(null, reply);
+	})
+}
+
+function addToSet(key, member, callback) {
+	client.sadd(key, member, function (err, reply) {
+		if (err) callback(err, null);
+		return callback(null, reply);
+	})
+}
+
+function getFromSet(key, callback) {
+	client.smembers(key, function (err, reply) {
+		if (err) callback(err, null);
+		return callback(null, reply);
+	})
+}
+
+function keys(key, callback) {
+	client.keys(key, function (err, reply) {
+		if (err) return callback(err, null);
+		return callback(null, reply);
+	})
+}
+
 
 
 module.exports = {
@@ -82,5 +110,9 @@ module.exports = {
 	setHashField: setHashField,
 	getHashField: getHashField,
 	deleteKey: deleteKey,
-	exists: exists
+	exists: exists,
+	removeFromSet: removeFromSet,
+	getFromSet: getFromSet,
+	addToSet: addToSet,
+	keys: keys
 }
