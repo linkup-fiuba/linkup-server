@@ -3,3 +3,7 @@ services:
 language: node_js
 node_js:
 - "stable"
+
+script:
+  - node server.js
+  - npm test
