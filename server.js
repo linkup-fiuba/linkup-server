@@ -43,7 +43,6 @@ if(cluster.isMaster) {
 
 	var port = process.env.PORT || 8080;        // set our port
 
-
 	// all of our routes will be prefixed with /api/linkup
 	app.use('/api/linkup', routes);
 

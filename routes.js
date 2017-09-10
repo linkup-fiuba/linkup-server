@@ -17,6 +17,14 @@ function create(router) {
 	    console.log(req.method+' '+req.url);
 	    next(); // make sure we go to the next routes and don't stop here
 	});
+
+	router.route('/')
+		.get(function(req,res) {
+			res.status(200).json({
+				statusCode: 200,
+				data: "Welcome to linkup API"
+			});	
+		});
 	router = createUserRoutes(router);
 	router = createUserPreferencesRoutes(router);
 	router = createUserAroundRoutes(router);
@@ -28,14 +36,14 @@ function createUserRoutes(router) {
 	    .get(function(req, res) {
 	    	Users.getUser(req.params.user_id, function(err,response) {
 	    		if (err) {
-	    			res.json({
+	    			res.status(500).json({
 						statusCode: 500,
 						data: err
 					});	
 	    		}
 	    		if (!response) {
-	    			res.json({
-						statusCode: 404,
+	    			res.status(404).json({
+						status: 404,
 						data: "User "+req.params.user_id+" not found"
 					});	
 	    		}
@@ -50,14 +58,14 @@ function createUserRoutes(router) {
 	    .put(function(req, res) {
 	    	Users.updateUser(req.params.user_id, req.body, function (err, response) {
 	    		if (err) {
-	    			res.json({
+	    			res.status(500).json({
 	    				statusCode: 500,
 	    				data: err
 	    			});
 	    		}
 
 	    		if (!response) {
-	    			res.json({
+	    			res.status(404).json({
 						statusCode: 404,
 						data: "User "+req.params.user_id+" not found"
 					});
@@ -72,14 +80,14 @@ function createUserRoutes(router) {
 	    .delete(function(req, res) {
 	    	Users.deleteUser(req.params.user_id, function(err,response) {
 	    		if (err) {
-		    		res.json({
+		    		res.status(500).json({
 						statusCode: 500,
 					 	data: err
 					});	
 	    		}
 
 	    		if (!response) {
-	    			res.json({
+	    			res.status(404).json({
 						statusCode: 404,
 						data: "User "+req.params.user_id+" not found"
 					});
@@ -97,18 +105,18 @@ function createUserRoutes(router) {
 			Users.parseUser(req.body, function(userModel) {
 				Users.createUser(userModel.id, userModel, function(err, response) {
 					if (err) {
-						res.json({
+						res.status(500).json({
 							statusCode: 500,
 							data: err
 						});
 					}
 					if (!response) {
-						res.json({
+						res.status(404).json({
 							statusCode: 404,
 							data: "User already exists"
 						});	
 					} else {
-				    	res.json({
+				    	res.status(200).json({
 							statusCode: 200,
 							data: response
 						});
@@ -127,7 +135,7 @@ function createUserRoutes(router) {
 						data: reply
 					})
 				} else {
-					res.json({
+					res.status(500).json({
 						statusCode: 500,
 						data: "error"
 					})
@@ -142,14 +150,14 @@ function createUserPreferencesRoutes(router) {
 		.post(function (req, res) {
 			Preferences.parsePreferences(req.params.user_id, req.body, function(errorParse, preferencesModel) {
 				if (errorParse) {
-					res.json({
+					res.status(500).json({
 						statusCode: 500,
 						data: errorParse
 					});
 				} else {
 					Preferences.createPreferences(req.params.user_id, preferencesModel, function (err, response) {
 						if (err) {
-							res.json({
+							res.status(500).json({
 								statusCode: 500,
 								data: err
 							});
@@ -166,14 +174,14 @@ function createUserPreferencesRoutes(router) {
 		.get(function (req, res) {
 			Preferences.getPreferences(req.params.user_id, function (err, reply) {
 				if (err) {
-	    			res.json({
+	    			res.status(500).json({
 	    				statusCode: 500,
 	    				data: err
 	    			});
 	    		}
 
 	    		if (!reply) {
-	    			res.json({
+	    			res.status(404).json({
 						statusCode: 404,
 						data: "User "+req.params.user_id+" not found"
 					});
@@ -188,14 +196,14 @@ function createUserPreferencesRoutes(router) {
 		.put(function (req, res) {
 			Preferences.updatePreferences(req.params.user_id, req.body, function (err, reply) {
 				if (err) {
-	    			res.json({
+	    			res.status(500).json({
 	    				statusCode: 500,
 	    				data: err
 	    			});
 	    		}
 
 	    		if (!reply) {
-	    			res.json({
+	    			res.status(404).json({
 						statusCode: 404,
 						data: "User "+req.params.user_id+" not found"
 					});
@@ -215,14 +223,14 @@ function createUserAroundRoutes(router) {
 		.get(function (req, res) {
 			Around.getAroundUsers(req.params.user_id, function (err, reply) {
 				if (err) {
-	    			return res.json({
+	    			return res.status(500).json({
 	    				statusCode: 500,
 	    				data: err
 	    			});
 	    		}
 
 	    		if (!reply) {
-	    			return res.json({
+	    			return res.status(404).json({
 						statusCode: 404,
 						data: "User "+req.params.user_id+" not found"
 					});
@@ -238,7 +246,7 @@ function createUserAroundRoutes(router) {
 		.delete(function (req, res) {
 			Around.deleteAroundUser(req.params.user_id, req.params.user_id_remove, function (err, reply) {
 				if (err) {
-	    			return res.json({
+	    			return res.status(500).json({
 	    				statusCode: 500,
 	    				data: err
 	    			});
