@@ -370,42 +370,7 @@ describe("LinkUp API Around Users Test",function(){
 			})
 		});
 	});
-	/*it("Get user's preferences",function(done){
-		server
-		.get('/users/1/preferences')
-		.expect("Content-type",/json/)
-		.expect(200)
-		.end(function(err,res){
-			res.status.should.equal(200);
-			JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.preferencesResponse));
-			done();
-		});
-
-
-	});
-
-	it("Update user's preferences",function(done){
-		server
-		.put('/users/1/preferences')
-		.send({
-			distance: 5,
-			minAge: 20,
-			maxAge: 35,
-			searchMode:"couple"
-		})
-		.expect("Content-type",/json/)
-		.expect(200)
-		.end(function(err,res){
-			res.status.should.equal(200);
-			res.body.data.should.equal("OK");
-			server
-			.get('/users/1/preferences')
-			.end(function(err,res){
-				JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.preferencesUpdated));
-				done();
-			})
-		});
-	});*/
+	
 });
 
 client.quit();
