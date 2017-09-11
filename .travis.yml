@@ -9,6 +9,4 @@ script:
   - npm test
 
 notifications:
-  slack:
-    on_success: always
-    on_failure: always
+    slack: link-up-fiuba:0VWRSx22TOwKZsZjDubgN7d2
