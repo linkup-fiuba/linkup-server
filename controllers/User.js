@@ -16,7 +16,7 @@ function getUser(userId, callback) {
 				gender: response.gender,
 				education: JSON.parse(response.education),
 				description: response.description,
-				pictures: response.pictures
+				pictures: JSON.parse(response.pictures)
 			}
 			return callback(null, user);
 		} else {
@@ -53,7 +53,7 @@ function createUser(userId, user, callback) {
 							gender: user.gender,
 							education: JSON.parse(user.education),
 							description: user.description,
-							pictures: user.pictures
+							pictures: JSON.parse(user.pictures)
 						}
 						return callback(null, userModel);
 					});
@@ -167,7 +167,7 @@ function parseUser(facebookUser, callbackUser) {
 			gender: facebookUser.gender,
 			education: JSON.stringify(education),
 			description: "",
-			pictures: ""
+			pictures: JSON.stringify([])
 		}
 		
 	    callbackUser(user);
