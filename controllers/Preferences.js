@@ -27,8 +27,12 @@ function getPreferences(userId, callback) {
 function createPreferences(userId, preferences, callback) {
 	redisLib.setHash(config.preferencesKey+userId, preferences, function (err, response) {
 		if (err) return callback(err, null);
-		Around.createAroundUser(userId, function (err, response) {
-			return callback(null, response);
+		Around.deleteAroundUsers(userId, function (err, userIds) {
+			if (err) return callback(err, null);
+			Around.createAroundUser(userId, function (err, response) {
+				return callback(null, response);
+			})
+			// body...
 		})
 	}); 		
 		
