@@ -4,19 +4,38 @@ var redisLib 	= require('../redisLib');
 var config	 	= require('../config');
 
 function getAroundUsers(userId, callback) {
-	redisLib.getFromSet(config.aroundKey+userId, function(err, userIdSet) {
-		if (err) callback(err, null);
-		redisLib.getFromSet(config.aroundKey+userId+config.shown, function(err, userIdSetShown) {
-			getUsersAround(userId, userIdSet, userIdSetShown, function (err, users) {
-				if (err) return callback(err, null);
-				if (users) {
-					return callback(null, users);
-				} else {
-					return callback(null, null);
+	async.waterfall([
+	    function (cb) {
+	    	redisLib.getFromSet(config.aroundKey+userId, function(err, userIdSet) {
+				if (err) cb(err, null);
+				if (userIdSet) {
+					return cb(null, userIdSet );
 				}
-			})
-		})
-	})
+			});
+	    },
+	    function (userIdSet, cb) {
+	    	redisLib.getFromSet(config.aroundKey+userId+config.shown, function(err, userIdSetShown) {
+				if (err) return cb(err, null);
+				if (userIdSetShown) {
+					return cb(null, userIdSet, userIdSetShown );
+				}
+			});
+	    },
+	    function (userIdSet, userIdSetShown, cb) {
+	    	getUsersAround(userId, userIdSet, userIdSetShown, function (err, users) {
+				if (err) return cb(err, null);
+				if (users) {
+					return cb(null, users);
+				}
+			});
+	    }
+	], function (error, users) {
+	    if (error) {
+	    	return callback(error, null);
+	    }
+	   
+	    return callback(null, users);
+	});
 }
 
 function createAroundUser(userId, callbackAround) {
@@ -91,6 +110,7 @@ function createAroundUser(userId, callbackAround) {
 							picture: user.picture,
 							compatibility: 1
 						};
+
 						//save info of around 
 						redisLib.setHash(config.aroundKey+userId+':'+id, userModel, function (err, responseSave) {
 							if (err) return cb(err, null);
@@ -110,7 +130,7 @@ function createAroundUser(userId, callbackAround) {
 				});
 			}, function finish(err) {
 				//fin foreach
-				if (err) return callbackAround(err, null);
+				if (err) return callback(err, null);
 				return callback(null);
 			});
 	    }
@@ -177,14 +197,14 @@ function deleteAroundUser(userId, userIdRemove, callbackDelete) {
 } 
 
 function getUsersAround(userId, userIdsAround, userIdsAroundShown, cbUserAround) {
-	var users = [];
-	
 	var limit = config.limit;
 	var i = 0;
 
 	async.waterfall([
 	    function getDiff(callback) {
+	    	//chequeo cuales mostre
 	    	var arrayDiff = userIdsAround.diff(userIdsAroundShown);
+	    	//mostre todos
 			if (arrayDiff.length == 0) {
 				arrayDiff = userIdsAround;
 				redisLib.deleteKey(config.aroundKey+userId+config.shown, function (err, replyRem) {
@@ -196,19 +216,18 @@ function getUsersAround(userId, userIdsAround, userIdsAroundShown, cbUserAround)
 			}
 	    },
 	    function iterate(arrayDiff, callbackIteration) {
+	    	var users = [];
 	    	async.each(arrayDiff, function (id, callbackIds) {
 				redisLib.getHash(config.aroundKey+userId+':'+id, function (err, user) {
-					if (!user) {
-						return callbackIds();
+					if (i == limit) {
+						return callbackIteration(null, users);
 					} else {
-						if (i == limit) {
-							return callbackIds(null, users);
-						} else {
-							i++;
+						i++;
+						if (user != null) {
 							var userModel = {
-            					id: id,
+	        					id: id,
 								userName: user.userName,
-            					picture: user.picture,
+	        					picture: user.picture,
 								description: user.description,
 								compatibility: user.compatibility
 							};
@@ -216,6 +235,8 @@ function getUsersAround(userId, userIdsAround, userIdsAroundShown, cbUserAround)
 							redisLib.addToSet(config.aroundKey+userId+config.shown, id, function(err, response) {
 								return callbackIds();
 							})
+						} else {
+							return callbackIds();
 						}
 					}
 				})
