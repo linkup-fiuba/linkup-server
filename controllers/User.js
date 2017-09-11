@@ -10,13 +10,13 @@ function getUser(userId, callback) {
 		if (response) {
 			var user = {
 				id: response.id,
-				userName: response.userName,
+				name: response.name,
 				picture: response.picture,
 				likes: JSON.parse(response.likes),
 				gender: response.gender,
 				education: JSON.parse(response.education),
 				description: response.description,
-				pictures: response.pictures
+				pictures: JSON.parse(response.pictures)
 			}
 			return callback(null, user);
 		} else {
@@ -47,13 +47,13 @@ function createUser(userId, user, callback) {
 						if (err) return callback(err, null);
 						var userModel = {
 							id: userId,
-							userName: user.userName,
+							name: user.name,
 							picture: user.picture,
 							likes: JSON.parse(user.likes),
 							gender: user.gender,
 							education: JSON.parse(user.education),
 							description: user.description,
-							pictures: user.pictures
+							pictures: JSON.parse(user.pictures)
 						}
 						return callback(null, userModel);
 					});
@@ -161,13 +161,13 @@ function parseUser(facebookUser, callbackUser) {
 	    }
 	    var user = {
 			id: facebookUser.id,
-			userName: facebookUser.name,
+			name: facebookUser.name,
 			picture: facebookUser.picture.data.url,
 			likes: JSON.stringify(likes),
 			gender: facebookUser.gender,
 			education: JSON.stringify(education),
 			description: "",
-			pictures: ""
+			pictures: JSON.stringify([])
 		}
 		
 	    callbackUser(user);
