@@ -176,6 +176,7 @@ describe("LinkUp API Preferences Test",function(){
 		server
 		.put('/users/1/preferences')
 		.send({
+			gender: "female",
 			distance: 5,
 			minAge: 20,
 			maxAge: 35,
@@ -194,6 +195,33 @@ describe("LinkUp API Preferences Test",function(){
 			})
 		});
 	});
+
+
+	it("Update user's gender preferences",function(done){
+		server
+		.put('/users/1/preferences')
+		.send({
+			gender: "male",
+			distance: 5,
+			minAge: 20,
+			maxAge: 35,
+			searchMode:"couple"
+		})
+		.expect("Content-type",/json/)
+		.expect(200)
+		.end(function(err,res){
+			res.status.should.equal(200);
+			res.body.data.should.equal("OK");
+			server
+			.get('/users/1/preferences')
+			.end(function(err,res){
+				JSON.stringify(res.body.data.gender).should.equal(JSON.stringify("male"));
+				done();
+			})
+		});
+	});
+
+
 });
 
 describe("LinkUp API Around Users Test",function(){
@@ -224,7 +252,7 @@ describe("LinkUp API Around Users Test",function(){
 							.get('/users/4/around')
 							.expect(200)
 							.end(function (err, res) {
-								JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.maleUserAroundTwo));
+								JSON.stringify(res.body.data).should.equal(JSON.stringify([objects.maleUserAroundTwo]));
 								done();
 							})	
 					
@@ -263,7 +291,7 @@ describe("LinkUp API Around Users Test",function(){
 							.get('/users/2/around')
 							.expect(200)
 							.end(function (err, res) {
-								JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.femaleUserAround));
+								JSON.stringify(res.body.data).should.equal(JSON.stringify([objects.femaleUserAround]));
 								done();
 							})	
 					
@@ -302,7 +330,7 @@ describe("LinkUp API Around Users Test",function(){
 							.get('/users/5/around')
 							.expect(200)
 							.end(function (err, res) {
-								JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.femaleUserAroundFour));
+								JSON.stringify(res.body.data).should.equal(JSON.stringify([objects.femaleUserAroundFour]));
 								done();
 							})	
 							
@@ -340,7 +368,7 @@ describe("LinkUp API Around Users Test",function(){
 							.get('/users/1/around')
 							.expect(200)
 							.end(function (err, res) {
-								JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.maleUserAroundFour));
+								JSON.stringify(res.body.data).should.equal(JSON.stringify([objects.maleUserAroundFour]));
 								done();
 							})	
 							
@@ -378,7 +406,7 @@ describe("LinkUp API Around Users Test",function(){
 							.get('/users/3/around')
 							.expect(200)
 							.end(function (err, res) {
-								JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.femaleUserAroundThree));
+								JSON.stringify(res.body.data).should.equal(JSON.stringify([objects.femaleUserAroundThree]));
 								done();
 							})	
 							
@@ -427,6 +455,34 @@ describe("LinkUp API Around Users Test",function(){
 				})			
 			})
 		});
+	});
+
+	it("Get around users after update user's gender preferences",function(done){
+		//client.flushall( function (err, succeeded) {
+			server
+			.post('/users/2/preferences')
+			.send({
+				gender: "male",
+				distance: 5,
+				minAge: 20,
+				maxAge: 35,
+				mode: "visible",
+				searchMode:"couple"
+			})
+			.expect("Content-type",/json/)
+			.expect(200)
+			.end(function(err,res){
+				res.status.should.equal(200);
+				res.body.data.should.equal("OK");
+				server
+				.get('/users/2/around')
+				.end(function(err,res){
+					JSON.stringify(res.body.data).should.equal(JSON.stringify([objects.maleUserAround, objects.maleUserAroundFour]));
+					done();
+				})
+			});
+		//});
+
 	});
 
 	
