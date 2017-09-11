@@ -163,9 +163,9 @@ function parseUser(facebookUser, callbackUser) {
 	    }
 	    var user = {
 			id: facebookUser.id,
-			name: facebookUser.name,
-			birthday: facebookUser.birthday,
-			picture: facebookUser.picture.data.url,
+			name: facebookUser.name ? facebookUser.name : "",
+			birthday: facebookUser.birthday ? facebookUser.birthday : "",
+			picture: facebookUser.picture.data.url ? facebookUser.picture.data.url : "",
 			likes: JSON.stringify(likes),
 			gender: facebookUser.gender,
 			education: JSON.stringify(education),
