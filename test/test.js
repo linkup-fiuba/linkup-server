@@ -96,6 +96,25 @@ describe("LinkUp API User Test",function(){
 		});
 	});
 
+	it("Update user's description",function(done){
+		server
+		.put('/users/1')
+		.send({description: 'Amo la musica'})
+		.expect("Content-type",/json/)
+		.expect(200)
+		.end(function(err,res){
+			res.status.should.equal(200);
+			res.body.data.should.equal("OK");
+			server
+			.get('/users/1')
+			.end(function(err,res){
+				JSON.stringify(res.body.data.description).should.equal(JSON.stringify('Amo la musica'));
+				done();
+			})
+		});
+	});
+
+
 	it("Delete an user",function(done){
 		server
 		.delete('/users/1')

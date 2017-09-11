@@ -44,13 +44,14 @@ function createAroundUser(userId, callbackAround) {
 	    function (callback) {
 	    	//get info of my user
 	    	redisLib.getHash(config.usersKey+userId, function (err, user) {
-	    		if (err) return callback(err, null);
+	    		if (err) return callbackAround(err, null);
 	    		if (!user) {
-	    			return callback(null, null);
+	    			return callbackAround(null, null);
 	    		}
 	    		redisLib.getHash(config.preferencesKey+userId, function (err, userPreferences) {
-					if (err) return callback(err, null);
+					if (err) return callbackAround(err, null);
 					if (userPreferences.mode != "invisible") {
+
 						return callback(null, user ,userPreferences);
 					} else{ 
 						return callbackAround(null, []);
@@ -58,10 +59,10 @@ function createAroundUser(userId, callbackAround) {
 				});
 	    	});
 	    },
-	    function getUserList(user, userPreferences, callback) {
+	    function (user, userPreferences, callback) {
 	    	//obtengo todos los ids de los usuarios de preferencia del user actual
 	    	redisLib.getFromSet(config.genderKey+userPreferences.gender, function (err, usersIds) {
-				if (err) callback(err, null);
+				if (err) callbackAround(err, null);
 				return callback(null, user, userPreferences, usersIds);
 			});
 	    },
