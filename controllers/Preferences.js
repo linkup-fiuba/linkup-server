@@ -7,7 +7,20 @@ var Around	 	= require('./Around');
 function getPreferences(userId, callback) {
 	redisLib.getHash(config.preferencesKey+userId, function(err,response) {
 		if (err) callback(err, null);
-		return callback(null, response);
+		if (response) {
+			var preferences = {
+				userId: response.userId,
+		        gender: response.gender,
+		        distance: response.distance,
+		        minAge: response.minAge,
+		        maxAge: response.maxAge,
+		        mode: response.mode,
+		        searchMode: response.searchMode
+			};
+			return callback(null, preferences);
+		} else {
+			return callback(null, null);
+		}
 	})
 }
 

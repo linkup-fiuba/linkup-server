@@ -4,6 +4,8 @@ var redis 		= require('redis');
 var objects 	= require('./toTestObj');
 
 var client 		= redis.createClient();
+client.select(1, function(err,res){
+});
 
 // This agent refers to PORT where program is runninng.
 
@@ -34,13 +36,15 @@ describe("LinkUp API Test",function(){
 describe("LinkUp API User Test",function(){
 
 	it("Create an user",function(done){
-		client.del('user_1', function(err, response) {
+		client.flushdb( function (err, succeeded) {
 			server
 			.post('/users')
 			.send(objects.user)
 			.expect("Content-type",/json/)
 			.expect(200)
 			.end(function(err,res){
+				console.log("cere");
+				console.log(res.body);
 				res.status.should.equal(200);
 				res.body.data.should.equal("OK");
 				done();
@@ -110,4 +114,145 @@ describe("LinkUp API User Test",function(){
 			})
 		});
 	});
+});
+
+describe("LinkUp API Preferences Test",function(){
+
+	it("Create user's preferences",function(done){
+		client.flushdb( function (err, succeeded) {
+			server
+			.post('/users')
+			.send(objects.user)
+			.end(function(err,res){
+				server
+				.post('/users/1/preferences')
+				.send(objects.malePreferences)
+				.expect("Content-type",/json/)
+				.expect(200)
+				.end(function(err,res){
+					res.status.should.equal(200);
+					res.body.data.should.equal("OK");
+					done();
+				});
+			});
+		});
+
+	});
+
+
+	it("Get user's preferences",function(done){
+		server
+		.get('/users/1/preferences')
+		.expect("Content-type",/json/)
+		.expect(200)
+		.end(function(err,res){
+			res.status.should.equal(200);
+			JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.preferencesResponse));
+			done();
+		});
+
+
+	});
+
+	it("Update user's preferences",function(done){
+		server
+		.put('/users/1/preferences')
+		.send({
+			distance: 5,
+			minAge: 20,
+			maxAge: 35,
+			searchMode:"couple"
+		})
+		.expect("Content-type",/json/)
+		.expect(200)
+		.end(function(err,res){
+			res.status.should.equal(200);
+			res.body.data.should.equal("OK");
+			server
+			.get('/users/1/preferences')
+			.end(function(err,res){
+				JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.preferencesUpdated));
+				done();
+			})
+		});
+	});
+});
+
+describe("LinkUp API Around Users Test",function(){
+
+	it("Get users around a female searching male",function(done){
+		client.flushdb( function (err, succeeded) {
+			server
+			.post('/users')
+			.send(objects.femaleUser)
+			.expect(200)
+			.end(function (err, res) {
+				server
+				.post('/users')
+				.send(objects.user)
+				.expect(200)
+				.end(function (err, res) {
+					server
+					.post('/users/1/preferences')
+					.send(objects.femalePreferences)
+					.expect(200)
+					.end(function (err, res) {
+						server
+						.post('/users/2/preferences')
+						.send(objects.malePreferences)
+						.expect(200)
+						.end(function (err, res) {
+							server
+							.get('/users/2/around')
+							.expect(200)
+							.end(function (err, res) {
+								JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.maleUserAround));
+								done();
+							})	
+							
+							
+						})			
+					})		
+				})			
+			})
+		});
+	});
+
+
+	/*it("Get user's preferences",function(done){
+		server
+		.get('/users/1/preferences')
+		.expect("Content-type",/json/)
+		.expect(200)
+		.end(function(err,res){
+			res.status.should.equal(200);
+			JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.preferencesResponse));
+			done();
+		});
+
+
+	});
+
+	it("Update user's preferences",function(done){
+		server
+		.put('/users/1/preferences')
+		.send({
+			distance: 5,
+			minAge: 20,
+			maxAge: 35,
+			searchMode:"couple"
+		})
+		.expect("Content-type",/json/)
+		.expect(200)
+		.end(function(err,res){
+			res.status.should.equal(200);
+			res.body.data.should.equal("OK");
+			server
+			.get('/users/1/preferences')
+			.end(function(err,res){
+				JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.preferencesUpdated));
+				done();
+			})
+		});
+	});*/
 });
