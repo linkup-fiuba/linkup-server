@@ -7,3 +7,8 @@ node_js:
 script:
   - node server.js &
   - npm test
+
+notifications:
+  slack:
+    on_success: always
+    on_failure: always
