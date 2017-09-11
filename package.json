@@ -6,5 +6,14 @@
     "body-parser": "~1.0.1",
     "express": "^4.9.5",
     "redis": "^2.8.0"
+  },
+  "devDependencies": {
+    "mocha": "^3.5.2",
+    "should": "^13.0.1",
+    "supertest": "^3.0.0"
+  },
+  "scripts": {
+  	"start": "node server.js",
+    "test": "mocha"
   }
 }

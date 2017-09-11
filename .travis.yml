@@ -1,0 +1,12 @@
+services:
+  - redis-server
+language: node_js
+node_js:
+  - "6"
+
+script:
+  - node server.js &
+  - npm test
+
+notifications:
+    slack: link-up-fiuba:0VWRSx22TOwKZsZjDubgN7d2
