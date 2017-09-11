@@ -3,9 +3,7 @@ var should 		= require("should");
 var redis 		= require('redis');
 var objects 	= require('./toTestObj');
 
-var client 		= redis.createClient();
-client.select(1, function(err,res){
-});
+var client 		= redis.createClient({'db': 5});
 
 // This agent refers to PORT where program is runninng.
 
@@ -37,18 +35,19 @@ describe("LinkUp API User Test",function(){
 
 	it("Create an user",function(done){
 		client.flushdb( function (err, succeeded) {
-			server
-			.post('/users')
-			.send(objects.user)
-			.expect("Content-type",/json/)
-			.expect(200)
-			.end(function(err,res){
-				console.log("cere");
-				console.log(res.body);
-				res.status.should.equal(200);
-				res.body.data.should.equal("OK");
-				done();
-			});
+			client.del('user_1', function(err, res) {
+				server
+				.post('/users')
+				.send(objects.user)
+				.expect("Content-type",/json/)
+				.expect(200)
+				.end(function(err,res){
+					res.status.should.equal(200);
+					res.body.data.should.equal("OK");
+					done();
+				});
+				
+			})
 		})
 
 	});
@@ -124,16 +123,16 @@ describe("LinkUp API Preferences Test",function(){
 			.post('/users')
 			.send(objects.user)
 			.end(function(err,res){
-				server
-				.post('/users/1/preferences')
-				.send(objects.malePreferences)
-				.expect("Content-type",/json/)
-				.expect(200)
-				.end(function(err,res){
-					res.status.should.equal(200);
-					res.body.data.should.equal("OK");
-					done();
-				});
+				  server
+					.post('/users/1/preferences')
+					.send(objects.malePreferences)
+					.expect("Content-type",/json/)
+					.expect(200)
+					.end(function(err,res){
+						res.status.should.equal(200);
+						res.body.data.should.equal("OK");
+						done();
+					});
 			});
 		});
 
@@ -181,7 +180,7 @@ describe("LinkUp API Preferences Test",function(){
 describe("LinkUp API Around Users Test",function(){
 
 	it("Get users around a female searching male",function(done){
-		client.flushdb( function (err, succeeded) {
+		client.flushall( function (err, succeeded) {
 			server
 			.post('/users')
 			.send(objects.femaleUser)
@@ -189,24 +188,102 @@ describe("LinkUp API Around Users Test",function(){
 			.end(function (err, res) {
 				server
 				.post('/users')
-				.send(objects.user)
+				.send(objects.maleUserTwo)
 				.expect(200)
 				.end(function (err, res) {
 					server
-					.post('/users/1/preferences')
+					.post('/users/2/preferences')
 					.send(objects.femalePreferences)
 					.expect(200)
 					.end(function (err, res) {
 						server
-						.post('/users/2/preferences')
+						.post('/users/4/preferences')
 						.send(objects.malePreferences)
 						.expect(200)
 						.end(function (err, res) {
-							server
+						  	server
+							.get('/users/4/around')
+							.expect(200)
+							.end(function (err, res) {
+								JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.maleUserAroundTwo));
+								done();
+							})	
+					
+							
+							
+						})			
+					})	
+				})			
+			})
+		});
+	});
+
+	it("Get users around a male searching female",function(done){
+		client.flushall( function (err, succeeded) {
+			server
+			.post('/users')
+			.send(objects.femaleUser)
+			.expect(200)
+			.end(function (err, res) {
+				server
+				.post('/users')
+				.send(objects.maleUserTwo)
+				.expect(200)
+				.end(function (err, res) {
+					server
+					.post('/users/2/preferences')
+					.send(objects.femalePreferences)
+					.expect(200)
+					.end(function (err, res) {
+						server
+						.post('/users/4/preferences')
+						.send(objects.malePreferences)
+						.expect(200)
+						.end(function (err, res) {
+						  	server
 							.get('/users/2/around')
 							.expect(200)
 							.end(function (err, res) {
-								JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.maleUserAround));
+								JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.femaleUserAround));
+								done();
+							})	
+					
+							
+							
+						})			
+					})	
+				})			
+			})
+		});
+	});
+
+	it("Get users around a female searching female",function(done){
+		client.flushall( function (err, succeeded) {
+			server
+			.post('/users')
+			.send(objects.femaleUserTwo)
+			.expect(200)
+			.end(function (err, res) {
+				server
+				.post('/users')
+				.send(objects.femaleUserFour)
+				.expect(200)
+				.end(function (err, res) {
+					server
+					.post('/users/5/preferences')
+					.send(objects.femalePreferences)
+					.expect(200)
+					.end(function (err, res) {
+						server
+						.post('/users/8/preferences')
+						.send(objects.femalePreferences)
+						.expect(200)
+						.end(function (err, res) {
+							server
+							.get('/users/5/around')
+							.expect(200)
+							.end(function (err, res) {
+								JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.femaleUserAroundFour));
 								done();
 							})	
 							
@@ -218,7 +295,81 @@ describe("LinkUp API Around Users Test",function(){
 		});
 	});
 
+	it("Get users around a male searching male",function(done){
+		client.flushall( function (err, succeeded) {
+			server
+			.post('/users')
+			.send(objects.user)
+			.expect(200)
+			.end(function (err, res) {
+				server
+				.post('/users')
+				.send(objects.maleUserFour)
+				.expect(200)
+				.end(function (err, res) {
+					server
+					.post('/users/1/preferences')
+					.send(objects.malePreferences)
+					.expect(200)
+					.end(function (err, res) {
+						server
+						.post('/users/7/preferences')
+						.send(objects.malePreferences)
+						.expect(200)
+						.end(function (err, res) {
+							server
+							.get('/users/1/around')
+							.expect(200)
+							.end(function (err, res) {
+								JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.maleUserAroundFour));
+								done();
+							})	
+							
+							
+						})			
+					})		
+				})			
+			})
+		});
+	});
 
+	it("Get users around a user searching both",function(done){
+		client.flushall( function (err, succeeded) {
+			server
+			.post('/users')
+			.send(objects.maleUserThree)
+			.expect(200)
+			.end(function (err, res) {
+				server
+				.post('/users')
+				.send(objects.femaleUserThree)
+				.expect(200)
+				.end(function (err, res) {
+					server
+					.post('/users/3/preferences')
+					.send(objects.bothPreferences)
+					.expect(200)
+					.end(function (err, res) {
+						server
+						.post('/users/6/preferences')
+						.send(objects.bothPreferences)
+						.expect(200)
+						.end(function (err, res) {
+							server
+							.get('/users/3/around')
+							.expect(200)
+							.end(function (err, res) {
+								JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.femaleUserAroundThree));
+								done();
+							})	
+							
+							
+						})			
+					})		
+				})			
+			})
+		});
+	});
 	/*it("Get user's preferences",function(done){
 		server
 		.get('/users/1/preferences')
@@ -256,3 +407,5 @@ describe("LinkUp API Around Users Test",function(){
 		});
 	});*/
 });
+
+client.quit();
