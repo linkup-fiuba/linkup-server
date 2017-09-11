@@ -43,11 +43,21 @@ function createUser(userId, user, callback) {
 				if (err) callback (err, null);
 				redisLib.addToSet(config.genderKey+config.bothKey, userId, function (err, reply) {
 					if (err) callback(err, null);
+					redisLib.setHash(config.usersKey+userId, user, function (err, response) {
+						if (err) return callback(err, null);
+						var userModel = {
+							id: userId,
+							userName: user.userName,
+							picture: user.picture,
+							likes: JSON.parse(user.likes),
+							gender: user.gender,
+							education: JSON.parse(user.education),
+							description: user.description,
+							pictures: user.pictures
+						}
+						return callback(null, userModel);
+					});
 
-				});
-				redisLib.setHash(config.usersKey+userId, user, function (err, response) {
-					if (err) return callback(err, null);
-					return callback(null, response);
 				});
 			});
 

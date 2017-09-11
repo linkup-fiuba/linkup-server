@@ -1,0 +1,196 @@
+{
+  "id": "10152669290175967",
+  "name": "Ale Levinas",
+  "picture": {
+    "data": {
+      "is_silhouette": false,
+      "url": "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2"
+    }
+  },
+  "likes": {
+    "data": [
+      {
+        "name": "Mike Chouhy",
+        "id": "404926546194888",
+        "created_time": "2017-09-02T22:28:59+0000"
+      },
+      {
+        "name": "Club Med Jobs Argentina",
+        "id": "660697614040724",
+        "created_time": "2017-08-18T02:40:39+0000"
+      },
+      {
+        "name": "El Presto",
+        "id": "754976184555001",
+        "created_time": "2017-07-23T02:00:54+0000"
+      },
+      {
+        "name": "MuleSoft",
+        "id": "345538702156232",
+        "created_time": "2017-06-17T21:39:22+0000"
+      },
+      {
+        "name": "MuleSoft Argentina",
+        "id": "124996047572659",
+        "created_time": "2017-06-15T20:40:59+0000"
+      },
+      {
+        "name": "Last Week Tonight with John Oliver",
+        "id": "479042895558058",
+        "created_time": "2017-06-06T02:07:43+0000"
+      },
+      {
+        "name": "Travel Buenos Aires",
+        "id": "125624064121107",
+        "created_time": "2017-06-15T19:44:46+0000"
+      },
+      {
+        "name": "Autopistas Urbanas",
+        "id": "474244272667216",
+        "created_time": "2017-05-20T01:41:30+0000"
+      },
+      {
+        "name": "Deporte Fiuba",
+        "id": "215841355598818",
+        "created_time": "2017-05-19T20:29:25+0000"
+      },
+      {
+        "name": "American Bike",
+        "id": "869974219705464",
+        "created_time": "2017-05-02T15:27:10+0000"
+      },
+      {
+        "name": "Wolox",
+        "id": "269506426415732",
+        "created_time": "2017-04-23T22:12:14+0000"
+      },
+      {
+        "name": "Programo Por Comida",
+        "id": "392320150845824",
+        "created_time": "2017-04-13T16:51:38+0000"
+      },
+      {
+        "name": "Mitre Fútbol",
+        "id": "1342942725728570",
+        "created_time": "2017-03-31T13:59:35+0000"
+      },
+      {
+        "name": "Hack The World LATAM",
+        "id": "272029363219749",
+        "created_time": "2017-03-22T01:50:53+0000"
+      },
+      {
+        "name": "Ministerio de Transporte de la Nación Argentina",
+        "id": "905409642879079",
+        "created_time": "2017-03-16T11:38:08+0000"
+      },
+      {
+        "name": "Coordinación de Vinculación Estudiantil FIUBA",
+        "id": "1723190624615257",
+        "created_time": "2017-02-14T01:23:40+0000"
+      },
+      {
+        "name": "El Lazo - Juventud Judía",
+        "id": "51545388596",
+        "created_time": "2017-02-14T01:13:30+0000"
+      },
+      {
+        "name": "Buenos Aires Market",
+        "id": "419989784705964",
+        "created_time": "2017-02-13T03:45:05+0000"
+      },
+      {
+        "name": "Only Linux User Can Understand It",
+        "id": "917485481626874",
+        "created_time": "2017-02-10T05:10:09+0000"
+      },
+      {
+        "name": "U.S. Senator Bernie Sanders",
+        "id": "9124187907",
+        "created_time": "2017-02-09T02:07:09+0000"
+      },
+      {
+        "name": "OneDay Social Volunteering",
+        "id": "1411736145710033",
+        "created_time": "2017-02-08T11:32:13+0000"
+      },
+      {
+        "name": "The People For Bernie Sanders",
+        "id": "1645816202305254",
+        "created_time": "2017-02-07T21:43:38+0000"
+      },
+      {
+        "name": "SMBC Comics",
+        "id": "244830742251856",
+        "created_time": "2017-02-07T04:02:53+0000"
+      },
+      {
+        "name": "Hillel Buenos Aires",
+        "id": "149948221687403",
+        "created_time": "2017-02-05T19:13:36+0000"
+      },
+      {
+        "name": "Sigment Bike",
+        "id": "102562550215716",
+        "created_time": "2017-02-04T15:11:20+0000"
+      }
+    ],
+    "paging": {
+      "cursors": {
+        "before": "NDA0OTI2NTQ2MTk0ODg4",
+        "after": "MTAyNTYyNTUwMjE1NzE2"
+      },
+      "next": "https://graph.facebook.com/v2.10/10152669290175967/likes?access_token=<access token sanitized>&pretty=0&limit=25&after=MTAyNTYyNTUwMjE1NzE2"
+    }
+  },
+  "gender": "male",
+  "education": [
+    {
+      "school": {
+        "id": "114540081890725",
+        "name": "Escuela Superior Carlos Pellegrini"
+      },
+      "type": "High School",
+      "year": {
+        "id": "144044875610606",
+        "name": "2011"
+      },
+      "id": "10150099245840967"
+    },
+    {
+      "school": {
+        "id": "249722121729156",
+        "name": "FIUBA Facultad de Ingenieria (UBA)"
+      },
+      "type": "College",
+      "id": "10151433074895967"
+    }
+  ]
+}
+
+
+
+CREATE TABLE `users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `facebook_id` varchar(200) UNIQUE,
+  `name` varchar(200) NOT NULL,
+  `picture` varchar(200) NOT NULL,
+  `likes` json default NULL,
+  `gender` varchar(32) NOT NULL,
+  `education` json DEFAULT NULL,
+  `pictures` json DEFAULT NULL,
+  `location` varchar(32) default NULL,
+  `description` varchar(200) NOT NULL,
+  PRIMARY KEY (`id`)
+);
+
+Id (int)
+facebookId (int)
+Name (VARCHAR)
+Picture (VARCHAR url)
+Likes (json con names)
+Gender
+Education (json => school name, type, year (si termino))
+Location {“lat”:”long”|}
+description
+pictures json
