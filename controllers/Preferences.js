@@ -28,8 +28,8 @@ function createPreferences(userId, preferences, callback) {
 	redisLib.setHash(config.preferencesKey+userId, preferences, function (err, response) {
 		if (err) return callback(err, null);
 		Around.createAroundUser(userId, function (err, response) {
+			return callback(null, response);
 		})
-		return callback(null, response);
 	}); 		
 		
 
