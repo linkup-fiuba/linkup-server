@@ -10,7 +10,6 @@ function getAroundUsers(userId, callback) {
 			getUsersAround(userId, userIdSet, userIdSetShown, function (err, users) {
 				if (err) return callback(err, null);
 				if (users) {
-
 					return callback(null, users);
 				} else {
 					return callback(null, null);
