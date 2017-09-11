@@ -370,7 +370,123 @@ describe("LinkUp API Around Users Test",function(){
 			})
 		});
 	});
+
+	it("Get users around a female searching in mode invisible",function(done){
+		client.flushall( function (err, succeeded) {
+			server
+			.post('/users')
+			.send(objects.femaleUserFive)
+			.expect(200)
+			.end(function (err, res) {
+				server
+				.post('/users')
+				.send(objects.maleUserTwo)
+				.expect(200)
+				.end(function (err, res) {
+					server
+					.post('/users/2/preferences')
+					.send(objects.femalePreferences)
+					.expect(200)
+					.end(function (err, res) {
+						server
+						.post('/users/9/preferences')
+						.send(objects.invisiblePreferences)
+						.expect(200)
+						.end(function (err, res) {
+						  	server
+							.get('/users/9/around')
+							.expect(200)
+							.end(function (err, res) {
+								JSON.stringify(res.body.data).should.equal(JSON.stringify([]));
+								done();
+							})	
+					
+							
+							
+						})			
+					})	
+				})			
+			})
+		});
+	});
+
 	
 });
+
+var user = {
+
+  picture: {
+    data: {
+      url: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2"
+    }
+  },
+  likes: {
+    data: 
+    [
+      {
+        name: "Canal 13"
+      },
+      {
+        name: "Dinosaurios"
+      }
+    ]
+  },
+  education: 
+  [
+    {
+      school: {
+        name: "Colegio Nuestra Señora de la Misericordia"
+      },
+      type: "High School"
+    }
+  ]
+};
+
+/*describe("LinkUp API Create Users Test",function(){
+	it("Create users and preferences",function(done){
+		
+		client.flushdb( function (err, succeeded) {
+			var j = 0;
+			var pref = objects.femalePreferences;
+			for (var i = 100; i > 0; i--) {
+				if (i <= 50) {
+					user.gender = "female";
+					user.id = i;
+					user.name = "nombreF"+i;	
+					pref = objects.malePreferences;
+
+				} else {
+					user.gender = "male";
+					user.id = i;
+					user.name = "nombreM"+i;
+
+					
+				}
+
+				server
+				.post('/users')
+				.send(user)
+				.end(function(err,res){
+					  server
+						.post('/users/'+i+'/preferences')
+						.send(pref)
+						.expect("Content-type",/json/)
+						.expect(200)
+						.end(function(err,res){
+							console.log(res);
+							res.status.should.equal(200);
+							res.body.data.should.equal("OK");
+							done();
+						});
+				});
+			
+			}	
+		});
+
+	});
+
+
+});
+*/
 
 client.quit();
