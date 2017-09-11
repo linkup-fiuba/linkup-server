@@ -7,7 +7,17 @@ var Preferences = require('./Preferences')
 function getUser(userId, callback) {
 	redisLib.getHash(config.usersKey+userId, function(err,response) {
 		if (err) callback(err, null);
-		return callback(null, response);
+		 var user = {
+			id: response.id,
+			userName: response.userName,
+			picture: response.picture,
+			likes: JSON.parse(response.likes),
+			gender: response.gender,
+			education: JSON.parse(response.education),
+			description: response.description,
+			pictures: response.pictures
+		}
+		return callback(null, user);
 	})
 }
 

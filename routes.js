@@ -47,8 +47,6 @@ function createUserRoutes(router) {
 						data: "User "+req.params.user_id+" not found"
 					});	
 	    		}
-	    		response.education = JSON.parse(response.education);
-	    		response.likes = JSON.parse(response.likes);
 				res.json({
 					statusCode: 200,
 					data: response

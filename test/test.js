@@ -54,20 +54,10 @@ var user = {
 };
 
 var userResponse = { 
-	education: 
-  	[ 
-  		{ 
-  			name: 'Colegio Nuestra Señora de la Misericordia',
-       		type: 'High School' 
-       	},
-     	{ 
-     		name: 'FIUBA Facultad de Ingenieria (UBA)', 
-     		type: 'College' 
-     	} 
-     ],
-  	gender: 'male',
   	id: '1',
-    likes: 
+  	userName: 'Martin Gonzalez',
+  	picture: 'https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2',
+  	likes: 
    	[ 
    		{ 
    			name: 'Mike Chouhy' 
@@ -85,10 +75,20 @@ var userResponse = {
      	 name: 'Deporte Fiuba' 
      	} 
     ],
-  	userName: 'Martin Gonzalez',
-  	picture: 'https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2',
-  	pictures: '',
- 	description: ''
+  	gender: 'male',
+	education: 
+  	[ 
+  		{ 
+  			name: 'Colegio Nuestra Señora de la Misericordia',
+       		type: 'High School' 
+       	},
+     	{ 
+     		name: 'FIUBA Facultad de Ingenieria (UBA)', 
+     		type: 'College' 
+     	} 
+     ],
+ 	description: '',
+  	pictures: ''
 }
 
 
@@ -151,8 +151,6 @@ describe("LinkUp API User Test",function(){
 		.expect(200)
 		.end(function(err,res){
 			res.status.should.equal(200);
-			console.log(res.body.data);
-			console.log(userResponse);
 			JSON.stringify(res.body.data).should.equal(JSON.stringify(userResponse));
 			done();
 		});
