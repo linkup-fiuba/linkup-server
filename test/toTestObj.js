@@ -324,7 +324,7 @@ var femaleUserFour = {
 
 var userResponse = { 
   	id: '1',
-  	userName: 'Martin Gonzalez',
+  	name: 'Martin Gonzalez',
   	picture: 'https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2',
   	likes: 
    	[ 
@@ -362,7 +362,7 @@ var userResponse = {
 
 var userUpdatedResponse = { 
   	id: '1',
-  	userName: 'Martin Gonzalez',
+  	name: 'Martin Gonzalez',
   	picture: 'https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2',
   	likes: 
    	[ 
@@ -448,7 +448,7 @@ var preferencesResponse = {
 var maleUserAround = [
   {
     id: "1",
-    userName: "Martin Gonzalez" ,
+    name: "Martin Gonzalez" ,
     picture: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2",
     description: "",
     compatibility: "1"
@@ -458,7 +458,7 @@ var maleUserAround = [
 var maleUserAroundTwo = [
   {
     id: "2",
-    userName: "Agustin Gimenez" ,
+    name: "Agustin Gimenez" ,
     picture: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2",
     description: "",
     compatibility: "1"
@@ -468,7 +468,7 @@ var maleUserAroundTwo = [
 var maleUserAroundThree = [
   {
     id: "3",
-    userName: "Juan Perez" ,
+    name: "Juan Perez" ,
     picture: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2",
     description: "",
     compatibility: "1"
@@ -478,7 +478,7 @@ var maleUserAroundThree = [
 var maleUserAroundFour = [
   {
     id: "7",
-    userName: "Arnaldo Paredes" ,
+    name: "Arnaldo Paredes" ,
     picture: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2",
     description: "",
     compatibility: "1"
@@ -488,7 +488,7 @@ var maleUserAroundFour = [
 var femaleUserAround = [
   {
     id: "4",
-    userName: "Samanta Loiza" ,
+    name: "Samanta Loiza" ,
     picture: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2",
     description: "",
     compatibility: "1"
@@ -498,7 +498,7 @@ var femaleUserAround = [
 var femaleUserAroundTwo = [
   {
     id: "5",
-    userName: "Mirtha Legrand" ,
+    name: "Mirtha Legrand" ,
     picture: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2",
     description: "",
     compatibility: "1"
@@ -508,7 +508,7 @@ var femaleUserAroundTwo = [
 var femaleUserAroundThree = [
   {
     id: "6",
-    userName: "Josefina Couto" ,
+    name: "Josefina Couto" ,
     picture: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2",
     description: "",
     compatibility: "1"
@@ -518,7 +518,7 @@ var femaleUserAroundThree = [
 var femaleUserAroundFour = [
   {
     id: "8",
-    userName: "Andrea Rincon" ,
+    name: "Andrea Rincon" ,
     picture: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2",
     description: "",
     compatibility: "1"

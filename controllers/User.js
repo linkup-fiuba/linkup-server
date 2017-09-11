@@ -10,7 +10,7 @@ function getUser(userId, callback) {
 		if (response) {
 			var user = {
 				id: response.id,
-				userName: response.userName,
+				name: response.name,
 				picture: response.picture,
 				likes: JSON.parse(response.likes),
 				gender: response.gender,
@@ -47,7 +47,7 @@ function createUser(userId, user, callback) {
 						if (err) return callback(err, null);
 						var userModel = {
 							id: userId,
-							userName: user.userName,
+							name: user.name,
 							picture: user.picture,
 							likes: JSON.parse(user.likes),
 							gender: user.gender,
@@ -161,7 +161,7 @@ function parseUser(facebookUser, callbackUser) {
 	    }
 	    var user = {
 			id: facebookUser.id,
-			userName: facebookUser.name,
+			name: facebookUser.name,
 			picture: facebookUser.picture.data.url,
 			likes: JSON.stringify(likes),
 			gender: facebookUser.gender,

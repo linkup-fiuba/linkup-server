@@ -97,7 +97,7 @@ function createAroundUser(userId, callbackAround) {
 
 				    	var userModel = {
 							id: id,
-							userName: otherUser.userName,
+							name: otherUser.name,
 							description: otherUser.description,
 							picture: otherUser.picture,
 							compatibility: 1
@@ -105,7 +105,7 @@ function createAroundUser(userId, callbackAround) {
 
 						var actualUserModel = {
 							id: userId,
-							userName: user.userName,
+							name: user.name,
 							description: user.description,
 							picture: user.picture,
 							compatibility: 1
@@ -226,7 +226,7 @@ function getUsersAround(userId, userIdsAround, userIdsAroundShown, cbUserAround)
 						if (user != null) {
 							var userModel = {
 	        					id: id,
-								userName: user.userName,
+								name: user.name,
 	        					picture: user.picture,
 								description: user.description,
 								compatibility: user.compatibility
