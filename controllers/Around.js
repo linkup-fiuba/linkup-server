@@ -48,20 +48,24 @@ function createAroundUser(userId, callbackAround) {
 	    		if (!user) {
 	    			return callback(null, null);
 	    		}
-	    		redisLib.getHashField(config.preferencesKey+userId, 'gender', function (err, userGenderPreferences) {
+	    		redisLib.getHash(config.preferencesKey+userId, function (err, userPreferences) {
 					if (err) return callback(err, null);
-					return callback(null, user ,userGenderPreferences);
+					if (userPreferences.mode != "invisible") {
+						return callback(null, user ,userPreferences);
+					} else{ 
+						return callbackAround(null, []);
+					}
 				});
 	    	});
 	    },
-	    function getUserList(user, userGenderPreferences, callback) {
+	    function getUserList(user, userPreferences, callback) {
 	    	//obtengo todos los ids de los usuarios de preferencia del user actual
-	    	redisLib.getFromSet(config.genderKey+userGenderPreferences, function (err, usersIds) {
+	    	redisLib.getFromSet(config.genderKey+userPreferences.gender, function (err, usersIds) {
 				if (err) callback(err, null);
-				return callback(null, user, userGenderPreferences, usersIds);
+				return callback(null, user, userPreferences, usersIds);
 			});
 	    },
-	    function (user, userGenderPreferences, usersIds, callback) {
+	    function (user, userPreferences, usersIds, callback) {
 		    async.each(usersIds, function (id, callbackIt) {
 				if (userId == id) {
 					return callbackIt();
@@ -77,7 +81,7 @@ function createAroundUser(userId, callbackAround) {
 				    	//obtengo la preferencia del otro user
 				    	redisLib.getHashField(config.preferencesKey+id, 'gender', function (err, userPref) {
 				    		//valido si puede haber match
-				    		validatePossibleAround(user.gender, userGenderPreferences, otherUser.gender, userPref, function (validate) {
+				    		validatePossibleAround(user.gender, userPreferences.gender, otherUser.gender, userPref, function (validate) {
 				    			if (validate) {
 				    				//agrego a la lista de los around
 				    				redisLib.addToSet(config.aroundKey+userId, id, function (err, reply) {
@@ -199,7 +203,9 @@ function deleteAroundUser(userId, userIdRemove, callbackDelete) {
 function getUsersAround(userId, userIdsAround, userIdsAroundShown, cbUserAround) {
 	var limit = config.limit;
 	var i = 0;
-
+	if (userIdsAround.length == 0) {
+		return cbUserAround(null, []);
+	}
 	async.waterfall([
 	    function getDiff(callback) {
 	    	//chequeo cuales mostre
