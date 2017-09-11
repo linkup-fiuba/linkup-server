@@ -9,7 +9,12 @@ function getAroundUsers(userId, callback) {
 		redisLib.getFromSet(config.aroundKey+userId+config.shown, function(err, userIdSetShown) {
 			getUsersAround(userId, userIdSet, userIdSetShown, function (err, users) {
 				if (err) return callback(err, null);
-				return callback(null, users);
+				if (users) {
+
+					return callback(null, users);
+				} else {
+					return callback(null, null);
+				}
 			})
 		})
 	})
@@ -200,7 +205,14 @@ function getUsersAround(userId, userIdsAround, userIdsAroundShown, cbUserAround)
 							return callbackIds(null, users);
 						} else {
 							i++;
-							users.push(user);
+							var userModel = {
+            					id: id,
+								userName: user.userName,
+            					picture: user.picture,
+								description: user.description,
+								compatibility: user.compatibility
+							};
+							users.push(userModel);
 							redisLib.addToSet(config.aroundKey+userId+config.shown, id, function(err, response) {
 								callbackIds();
 							})
