@@ -36,18 +36,18 @@ function createUserRoutes(router) {
 	    .get(function(req, res) {
 	    	Users.getUser(req.params.user_id, function(err,response) {
 	    		if (err) {
-	    			res.status(500).json({
+	    			return res.status(500).json({
 						statusCode: 500,
 						data: err
 					});	
 	    		}
 	    		if (!response) {
-	    			res.status(404).json({
+	    			return res.status(404).json({
 						status: 404,
 						data: "User "+req.params.user_id+" not found"
 					});	
 	    		}
-				res.json({
+				return res.json({
 					statusCode: 200,
 					data: response
 				}); 
@@ -56,19 +56,19 @@ function createUserRoutes(router) {
 	    .put(function(req, res) {
 	    	Users.updateUser(req.params.user_id, req.body, function (err, response) {
 	    		if (err) {
-	    			res.status(500).json({
+	    			return res.status(500).json({
 	    				statusCode: 500,
 	    				data: err
 	    			});
 	    		}
 
 	    		if (!response) {
-	    			res.status(404).json({
+	    			return res.status(404).json({
 						statusCode: 404,
 						data: "User "+req.params.user_id+" not found"
 					});
 	    		} else {
-			    	res.json({
+			    	return res.json({
 						statusCode: 200,
 						data: response
 					});
@@ -78,19 +78,19 @@ function createUserRoutes(router) {
 	    .delete(function(req, res) {
 	    	Users.deleteUser(req.params.user_id, function(err,response) {
 	    		if (err) {
-		    		res.status(500).json({
+		    		return res.status(500).json({
 						statusCode: 500,
 					 	data: err
 					});	
 	    		}
 
 	    		if (!response) {
-	    			res.status(404).json({
+	    			return res.status(404).json({
 						statusCode: 404,
 						data: "User "+req.params.user_id+" not found"
 					});
 	    		} else {
-	    			res.json({
+	    			return res.json({
 						statusCode: 200,
 						data: "OK"
 					}); 
@@ -103,18 +103,18 @@ function createUserRoutes(router) {
 			Users.parseUser(req.body, function(userModel) {
 				Users.createUser(userModel.id, userModel, function(err, response) {
 					if (err) {
-						res.status(500).json({
+						return res.status(500).json({
 							statusCode: 500,
 							data: err
 						});
 					}
 					if (!response) {
-						res.status(404).json({
+						return res.status(404).json({
 							statusCode: 404,
 							data: "User already exists"
 						});	
 					} else {
-				    	res.status(200).json({
+				    	return res.status(200).json({
 							statusCode: 200,
 							data: response
 						});
@@ -148,20 +148,20 @@ function createUserPreferencesRoutes(router) {
 		.post(function (req, res) {
 			Preferences.parsePreferences(req.params.user_id, req.body, function(errorParse, preferencesModel) {
 				if (errorParse) {
-					res.status(500).json({
+					return res.status(500).json({
 						statusCode: 500,
 						data: errorParse
 					});
 				} else {
 					Preferences.createPreferences(req.params.user_id, preferencesModel, function (err, response) {
 						if (err) {
-							res.status(500).json({
+							return res.status(500).json({
 								statusCode: 500,
 								data: err
 							});
 						}
 						//si ya existe lo reemplaza con el nuevo set de preferencias
-				    	res.json({
+				    	return res.json({
 							statusCode: 200,
 							data: response
 						});
@@ -172,19 +172,19 @@ function createUserPreferencesRoutes(router) {
 		.get(function (req, res) {
 			Preferences.getPreferences(req.params.user_id, function (err, reply) {
 				if (err) {
-	    			res.status(500).json({
+	    			return res.status(500).json({
 	    				statusCode: 500,
 	    				data: err
 	    			});
 	    		}
 
 	    		if (!reply) {
-	    			res.status(404).json({
+	    			return res.status(404).json({
 						statusCode: 404,
 						data: "User "+req.params.user_id+" not found"
 					});
 	    		} else {
-			    	res.json({
+			    	return res.json({
 						statusCode: 200,
 						data: reply
 					});
@@ -194,19 +194,19 @@ function createUserPreferencesRoutes(router) {
 		.put(function (req, res) {
 			Preferences.updatePreferences(req.params.user_id, req.body, function (err, reply) {
 				if (err) {
-	    			res.status(500).json({
+	    			return res.status(500).json({
 	    				statusCode: 500,
 	    				data: err
 	    			});
 	    		}
 
 	    		if (!reply) {
-	    			res.status(404).json({
+	    			return res.status(404).json({
 						statusCode: 404,
 						data: "User "+req.params.user_id+" not found"
 					});
 	    		} else {
-			    	res.json({
+			    	return res.json({
 						statusCode: 200,
 						data: reply
 					});
