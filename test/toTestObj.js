@@ -357,7 +357,7 @@ var userResponse = {
      	} 
      ],
      description: '',
-     pictures: ''
+     pictures: []
 }
 
 var userUpdatedResponse = { 
@@ -395,7 +395,7 @@ var userUpdatedResponse = {
      	} 
      ],
      description: 'Me gusta mucho viajar',
-     pictures: ''
+     pictures: []
 }
 
 var malePreferences = {
