@@ -199,7 +199,52 @@ function deleteAroundUser(userId, userIdRemove, callbackDelete) {
 	    return callbackDelete(null, "OK");
 	});
 
-} 
+}
+
+function deleteAroundUsers(userId, callbackDelete) {
+	redisLib.getFromSet(config.aroundKey+userId, function(err, userIdSet) {
+		if (err) callbackDelete(err, null);
+		if (userIdSet) {
+			async.each(userIdSet, function (id, cb) {
+					
+				async.waterfall([
+				    function (callback) {
+						redisLib.removeFromSet(config.aroundKey+userId, id, function (err, replySet) {
+							if (err) return callbackDelete(err, null);
+							return callback(null);
+						})
+				    },
+				    function (callback) {
+				    	redisLib.removeFromSet(config.aroundKey+id, userId, function (err, replySetTwo) {
+							if (err) return callbackDelete(err, null);
+							return callback(null);
+						})
+				    },
+				    function (callback) {
+				    	redisLib.deleteKey(config.aroundKey+userId+':'+id, function (err, replyRemOne) {
+							if (err) return callbackDelete(err, null);
+							redisLib.deleteKey(config.aroundKey+id+':'+userId, function (err, replyRemTwo) {
+								if (err) return callbackDelete(err, null);
+								return callback(null);
+							})		
+						})
+				    }
+				], function (error) {
+				    if (error) {
+				    	return callbackDelete(error, null);
+				    }
+				    return cb();
+				});
+			}, function finish(err) {
+				callbackDelete(null, userIdSet);
+			});
+		} else {
+			return callbackDelete(null, null);
+		}
+	});
+
+
+}  
 
 function getUsersAround(userId, userIdsAround, userIdsAroundShown, cbUserAround) {
 	var limit = config.limit;
@@ -269,5 +314,6 @@ Array.prototype.diff = function(a) {
 module.exports = {
 	getAroundUsers: getAroundUsers,
 	deleteAroundUser: deleteAroundUser,
-	createAroundUser: createAroundUser
+	createAroundUser: createAroundUser,
+	deleteAroundUsers: deleteAroundUsers
 }
