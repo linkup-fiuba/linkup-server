@@ -3,6 +3,7 @@
 var Users 		= require('./controllers/User');
 var Preferences = require('./controllers/Preferences');
 var Around 		= require('./controllers/Around');
+var Location 	= require('./controllers/Location');
 var redisLib 	= require('./redisLib'); //testing
 
 
@@ -28,6 +29,7 @@ function create(router) {
 	router = createUserRoutes(router);
 	router = createUserPreferencesRoutes(router);
 	router = createUserAroundRoutes(router);
+	router = createUserLocationRoutes(router);
 	return router;
 }
 
@@ -260,6 +262,67 @@ function createUserAroundRoutes(router) {
 		
 	return router;
 }
+
+function createUserLocationRoutes(router) {
+	router.route('/users/:user_id/location')
+		.post(function (req, res) {
+			Location.createLocation(req.params.user_id, req.body, function (err, reply) {
+				if (err) {
+	    			return res.status(500).json({
+	    				statusCode: 500,
+	    				data: err
+	    			});
+	    		}
+
+	    		if (!reply) {
+	    			return res.status(404).json({
+						statusCode: 404,
+						data: "User "+req.params.user_id+" not found"
+					});
+	    		} else {
+			    	return res.json({
+						statusCode: 200,
+						data: reply
+					});
+	    		}
+			});
+		})
+		.get(function (req, res) {
+			Location.getLocation(req.params.user_id, function (err, reply) {
+				if (err) {
+	    			return res.status(500).json({
+	    				statusCode: 500,
+	    				data: err
+	    			});
+	    		}
+	    		
+		    	return res.json({
+					statusCode: 200,
+					data: reply
+				});
+	    		
+	    	})
+		})
+		.put(function (req, res) {
+			Location.updateLocation(req.params.user_id, function (err, reply) {
+				if (err) {
+	    			return res.status(500).json({
+	    				statusCode: 500,
+	    				data: err
+	    			});
+	    		}
+	    		
+		    	return res.json({
+					statusCode: 200,
+					data: reply
+				});
+			})
+		})
+		
+	return router;
+}
+
+
 
 module.exports = {
 	create: create

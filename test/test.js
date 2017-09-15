@@ -488,6 +488,53 @@ describe("LinkUp API Around Users Test",function(){
 	
 });
 
+
+describe("LinkUp API User's location Test",function(){
+
+	it("Create user's location",function(done){
+		client.flushdb( function (err, succeeded) {
+			server
+			.post('/users')
+			.send(objects.user)
+			.end(function(err,res){
+				  server
+					.post('/users/1/location')
+					.send(objects.location)
+					.expect("Content-type",/json/)
+					.expect(200)
+					.end(function(err,res){
+						server
+						.get('/users/1/location')
+						.expect(200)
+						.end(function(err,res){
+							res.status.should.equal(200);
+							JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.location));
+							done();
+						})
+					});
+			});
+		});
+
+	});
+
+
+	it("Get user's location",function(done){
+		client.flushdb( function (err, succeeded) {
+			server
+			.get('/users/1/location')
+			.expect(200)
+			.end(function(err,res){
+				res.status.should.equal(200);
+				JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.location));
+				done();
+			})
+		});
+
+	});
+
+});
+
+
 var user = {
 
   picture: {

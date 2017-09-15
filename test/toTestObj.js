@@ -577,6 +577,11 @@ var femaleUserAroundFour = {
   
 }
 
+var location = {
+  lat: "0.45",
+  lon: "34.21"
+}
+
 module.exports = {
   user: user,
   maleUserTwo: maleUserTwo,
@@ -603,4 +608,5 @@ module.exports = {
   maleUserAroundTwo: maleUserAroundTwo,
   maleUserAroundThree: maleUserAroundThree,
   maleUserAroundFour: maleUserAroundFour,
+  location: location
 }
