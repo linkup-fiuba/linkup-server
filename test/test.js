@@ -532,6 +532,27 @@ describe("LinkUp API User's location Test",function(){
 
 	});
 
+	it("Update user's location",function(done){
+		client.flushdb( function (err, succeeded) {
+			server
+			.put('/users/1/location')
+			.send(objects.locationUpdated)
+			.expect(200)
+			.end(function(err,res){
+				server
+				.get('/users/1/location')
+				.expect(200)
+				.end(function(err, res) {
+					res.status.should.equal(200);
+					JSON.stringify(res.body.data).should.equal(JSON.stringify(objects.locationUpdated));
+					done();
+					
+				})
+			})
+		});
+
+	});
+
 });
 
 

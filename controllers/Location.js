@@ -36,8 +36,8 @@ function updateLocation(userId, locationUpdate, callback) {
 	redisLib.setHashField(config.usersKey+userId, 'location', locationUpdate, function(error, location) {
 		if (error) return callback (error, null);
 		if (location) {	
-			if (err) callback(err, null);
-			return callback(null, response);
+			console.log(location)
+			return callback(null, location);
 		} else {
 			return callback(null, null);
 		}

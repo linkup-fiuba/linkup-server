@@ -582,6 +582,11 @@ var location = {
   lon: "34.21"
 }
 
+var locationUpdated = {
+  lat: "15.05",
+  lon: "59.29"
+}
+
 module.exports = {
   user: user,
   maleUserTwo: maleUserTwo,
@@ -608,5 +613,6 @@ module.exports = {
   maleUserAroundTwo: maleUserAroundTwo,
   maleUserAroundThree: maleUserAroundThree,
   maleUserAroundFour: maleUserAroundFour,
-  location: location
+  location: location,
+  locationUpdated: locationUpdated
 }

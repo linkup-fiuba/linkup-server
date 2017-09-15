@@ -304,7 +304,7 @@ function createUserLocationRoutes(router) {
 	    	})
 		})
 		.put(function (req, res) {
-			Location.updateLocation(req.params.user_id, function (err, reply) {
+			Location.updateLocation(req.params.user_id, req.body, function (err, reply) {
 				if (err) {
 	    			return res.status(500).json({
 	    				statusCode: 500,
