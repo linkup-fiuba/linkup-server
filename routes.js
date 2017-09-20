@@ -113,7 +113,7 @@ function createUserRoutes(router) {
 					if (!response) {
 						return res.status(404).json({
 							statusCode: 404,
-							data: "User already exists"
+							data: "User "+userModel.id+ " already exists"
 						});	
 					} else {
 				    	return res.status(200).json({
@@ -150,6 +150,8 @@ function createUserPreferencesRoutes(router) {
 		.post(function (req, res) {
 			Preferences.parsePreferences(req.params.user_id, req.body, function(errorParse, preferencesModel) {
 				if (errorParse) {
+					console.log("errorParse");
+					console.log(errorParse);
 					return res.status(500).json({
 						statusCode: 500,
 						data: errorParse
@@ -157,6 +159,8 @@ function createUserPreferencesRoutes(router) {
 				} else {
 					Preferences.createPreferences(req.params.user_id, preferencesModel, function (err, response) {
 						if (err) {
+							console.log("error creating preferences");
+					console.log(err);
 							return res.status(500).json({
 								statusCode: 500,
 								data: err
@@ -273,18 +277,12 @@ function createUserLocationRoutes(router) {
 	    				data: err
 	    			});
 	    		}
-
-	    		if (!reply) {
-	    			return res.status(404).json({
-						statusCode: 404,
-						data: "User "+req.params.user_id+" not found"
-					});
-	    		} else {
-			    	return res.json({
-						statusCode: 200,
-						data: reply
-					});
-	    		}
+	    		
+		    	return res.json({
+					statusCode: 200,
+					data: reply
+				});
+	    		
 			});
 		})
 		.get(function (req, res) {

@@ -3,13 +3,14 @@
 // =============================================================================
 
 // call the packages we need
-var express    	= require('express');        // call express
-var bodyParser 	= require('body-parser');
-var async 		= require('async');
-var cluster 	= require('cluster');
+var express    		= require('express');        // call express
+var bodyParser 		= require('body-parser');
+var async 			= require('async');
+var cluster 		= require('cluster');
 
-var config 		= require('./config');
-var Routes 		= require('./routes');
+var config 			= require('./config');
+var Routes 			= require('./routes');
+var elasticSearch 	= require('./elasticSearchLib');
 
 if(cluster.isMaster) {
     var numWorkers = require('os').cpus().length;
@@ -45,6 +46,74 @@ if(cluster.isMaster) {
 
 	// all of our routes will be prefixed with /api/linkup
 	app.use('/api/linkup', routes);
+	var properties = {
+		properties: {
+			userId: {
+				type: "string"
+			},
+			location: {
+				type: "geo_point"
+			},
+			age: {
+				type: "string"
+			},
+			gender: {
+				type: "string"
+			},
+			mode: {
+				type: "string"
+			},
+			searchMode: {
+				type: "string"
+			}
+
+		}
+	}
+
+	elasticSearch.indexExists('users', function(err, res) {
+		if (err) {
+			console.log("err");
+			console.log(err);
+		}
+		if(res) {
+			/*elasticSearch.getMapping('users', function (err, res) {
+				if (err) {
+					console.log("==== Error getting mapping ====");
+				}
+				if (!res) {*/
+					elasticSearch.initMapping('users', 'user', properties, function(err, res) {
+						if (err) {
+							console.log("err");
+							console.log(err);
+						}
+						if (res) {
+							//console.log(res);
+						}
+					});
+				/*}
+				
+			});*/
+		} else {
+			elasticSearch.createIndex('users', function(err, res) {
+				if (err) {
+					console.log("err creating index");
+					console.log(err);
+				} 
+				if (res) {
+					elasticSearch.initMapping('users', 'user', properties, function(err, res) {
+						if (err) {
+							console.log("err init mapping");
+							console.log(err);
+						}
+						console.log("response init mapping");
+						console.log(res);
+					});
+				}
+			});
+		}
+	})
+		
+	
 
 	// START THE SERVER
 	// =============================================================================

@@ -3,6 +3,7 @@ var user = {
 	id: "1",
 	name: "Martin Gonzalez",
   birthday: "08/19/1993",
+  age: "24",
 	picture: {
 		data: {
 			url: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2"
@@ -50,6 +51,7 @@ var maleUserTwo = {
   id: "2",
   name: "Agustin Gimenez",
   birthday: "08/19/1993",
+  age: "24",
   picture: {
     data: {
       url: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2"
@@ -97,6 +99,7 @@ var maleUserThree = {
   id: "3",
   name: "Juan Perez",
   birthday: "08/19/1993",
+  age: "24",
   picture: {
     data: {
       url: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2"
@@ -144,6 +147,7 @@ var maleUserFour = {
   id: "7",
   name: "Arnaldo Paredes",
   birthday: "08/19/1993",
+  age: "24",
   picture: {
     data: {
       url: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2"
@@ -191,6 +195,7 @@ var femaleUser = {
   id: "4",
   name: "Samanta Loiza",
   birthday: "08/19/1993",
+  age: "24",
   picture: {
     data: {
       url: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2"
@@ -238,6 +243,7 @@ var femaleUserTwo = {
   id: "5",
   name: "Mirtha Legrand",
   birthday: "08/19/1993",
+  age: "24",
   picture: {
     data: {
       url: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2"
@@ -270,6 +276,7 @@ var femaleUserThree = {
   id: "6",
   name: "Josefina Couto",
   birthday: "08/19/1993",
+  age: "24",
   picture: {
     data: {
       url: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2"
@@ -302,6 +309,7 @@ var femaleUserFour = {
   id: "8",
   name: "Andrea Rincon",
   birthday: "08/19/1993",
+  age: "24",
   picture: {
     data: {
       url: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2"
@@ -335,6 +343,7 @@ var femaleUserFive = {
   id: "9",
   name: "Mercedes Revora",
   birthday: "08/19/1993",
+  age: "24",
   picture: {
     data: {
       url: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2"
@@ -367,6 +376,7 @@ var userResponse = {
   	id: '1',
   	name: 'Martin Gonzalez',
     birthday: "08/19/1993",
+    age: "24",
   	picture: 'https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2',
   	likes: 
    	[ 
@@ -406,6 +416,7 @@ var userUpdatedResponse = {
   	id: '1',
   	name: 'Martin Gonzalez',
     birthday: "08/19/1993",
+    age: "24",
   	picture: 'https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2',
   	likes: 
    	[ 
@@ -450,22 +461,77 @@ var invisiblePreferences = {
   searchMode:"friendship"
 }
 
-var malePreferences = {
+var userFourPreferences = {
   gender: "male", 
-  distance: "10",
-  minAge: "25",
-  maxAge: "35",
+  distance: "15",
+  minAge: "23",
+  maxAge: "25",
   mode: "visible",
-  searchMode:"friendship"
+  searchMode:"couple"
 }
 
-var femalePreferences = {
-  gender: "female", 
-  distance: "8",
-  minAge: "20",
-  maxAge: "28",
+var userOnePreferences = {
+  gender: "male", 
+  distance: "20",
+  minAge: "23",
+  maxAge: "35",
   mode: "visible",
-  searchMode:"friendship"
+  searchMode:"couple"
+}
+
+var userSevenPreferences = {
+  gender: "male", 
+  distance: "20",
+  minAge: "23",
+  maxAge: "35",
+  mode: "visible",
+  searchMode:"couple"
+}
+
+var userThreePreferences = {
+  gender: "both", 
+  distance: "10",
+  minAge: "23",
+  maxAge: "35",
+  mode: "visible",
+  searchMode:"couple"
+}
+
+var userSixPreferences = {
+  gender: "both", 
+  distance: "10",
+  minAge: "23",
+  maxAge: "35",
+  mode: "visible",
+  searchMode:"couple"
+}
+
+var userFivePreferences = {
+  gender: "female", 
+  distance: "10",
+  minAge: "23",
+  maxAge: "35",
+  mode: "visible",
+  searchMode:"couple"
+}
+
+var userEightPreferences = {
+  gender: "female", 
+  distance: "10",
+  minAge: "23",
+  maxAge: "35",
+  mode: "visible",
+  searchMode:"couple"
+}
+
+
+var userTwoPreferences = {
+  gender: "female", 
+  distance: "15",
+  minAge: "23",
+  maxAge: "25",
+  mode: "visible",
+  searchMode:"couple"
 }
 
 var bothPreferences = {
@@ -491,10 +557,10 @@ var preferencesResponse = {
   userId: "1",
   gender: "male",
   distance: "10",
-  minAge: "25",
+  minAge: "23",
   maxAge: "35",
   mode: "visible",
-  searchMode: "friendship"
+  searchMode: "couple"
 }
 
 var maleUserAround = {
@@ -577,14 +643,24 @@ var femaleUserAroundFour = {
   
 }
 
-var location = {
-  lat: "0.45",
-  lon: "34.21"
+var locationOne = {
+  lat: -34.59,
+  lon: -58.41
+}
+
+var locationTwo = {
+  lat: -34.58,
+  lon: -58.41
 }
 
 var locationUpdated = {
-  lat: "15.05",
-  lon: "59.29"
+  lat: "-15.05",
+  lon: "-59.29"
+}
+
+var locationNotFound = {
+    lat: "-34.32",
+    lon: "-60.34"
 }
 
 module.exports = {
@@ -601,8 +677,14 @@ module.exports = {
   userUpdatedResponse: userUpdatedResponse,
   invisiblePreferences: invisiblePreferences,
   bothPreferences: bothPreferences,
-  femalePreferences: femalePreferences,
-  malePreferences: malePreferences,
+  userOnePreferences: userOnePreferences,
+  userTwoPreferences: userTwoPreferences,
+  userThreePreferences: userThreePreferences,
+  userFourPreferences: userFourPreferences,
+  userFivePreferences: userFivePreferences,
+  userSixPreferences: userSixPreferences,
+  userSevenPreferences: userSevenPreferences,
+  userEightPreferences: userEightPreferences,
   preferencesResponse: preferencesResponse,
   preferencesUpdated: preferencesUpdated,
   femaleUserAround: femaleUserAround,
@@ -613,6 +695,8 @@ module.exports = {
   maleUserAroundTwo: maleUserAroundTwo,
   maleUserAroundThree: maleUserAroundThree,
   maleUserAroundFour: maleUserAroundFour,
-  location: location,
-  locationUpdated: locationUpdated
+  locationOne: locationOne,
+  locationTwo: locationTwo,
+  locationUpdated: locationUpdated,
+  locationNotFound: locationNotFound
 }

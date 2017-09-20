@@ -1,8 +1,10 @@
 'use strict';
-var async 		= require('async');
-var redisLib 	= require('../redisLib');
-var config 		= require('../config');
-var Around	 	= require('./Around');
+var async 			= require('async');
+var redisLib 		= require('../redisLib');
+var config 			= require('../config');
+var Around	 		= require('./Around');
+var User	 		= require('./User');
+var elasticSearch 	= require('../elasticSearchLib');
 
 function getPreferences(userId, callback) {
 	redisLib.getHash(config.preferencesKey+userId, function(err,response) {
@@ -26,17 +28,30 @@ function getPreferences(userId, callback) {
 
 function createPreferences(userId, preferences, callback) {
 	redisLib.setHash(config.preferencesKey+userId, preferences, function (err, response) {
-		if (err) return callback(err, null);
+		if (err) {
+			return callback(err, null);
+		}
 		Around.deleteAroundUsers(userId, function (err, userIds) {
-			if (err) return callback(err, null);
-			Around.createAroundUser(userId, function (err, response) {
-				return callback(null, response);
+			if (err) {
+				return callback(err, null);
+			}
+			User.parseUserForElasticSearch(userId, preferences, function(error, responseES) {
+				if (error) {
+					return callback(error, null);
+				}
+				if (responseES) {
+					Around.createAroundUser(userId, preferences, function (err, response) {
+						console.log("==== FINISH CREATING AROUND USER IN ES ======");
+						console.log(response);
+						return callback(null, "OK");
+					})
+					//return callback(null, response);
+				} else {
+					return callback(null, false);
+				}
 			})
-			// body...
 		})
-	}); 		
-		
-
+	}); 
 }
 
 

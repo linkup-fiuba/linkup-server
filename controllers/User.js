@@ -1,17 +1,18 @@
 'use strict';
-var async 		= require('async');
-var redisLib 	= require('../redisLib');
-var config	 	= require('../config');
-var Preferences = require('./Preferences')
+var async 			= require('async');
+var redisLib 		= require('../redisLib');
+var config	 		= require('../config');
+var elasticSearch 	= require('../elasticSearchLib');
 
 function getUser(userId, callback) {
 	redisLib.getHash(config.usersKey+userId, function(err,response) {
-		if (err) callback(err, null);
+		if (err) return callback(err, null);
 		if (response) {
 			var user = {
 				id: response.id,
 				name: response.name,
 				birthday: response.birthday,
+				age: response.age,
 				picture: response.picture,
 				likes: JSON.parse(response.likes),
 				gender: response.gender,
@@ -41,15 +42,16 @@ function createUser(userId, user, callback) {
 			return callback(null, null);
 		} else {
 			redisLib.addToSet(config.genderKey+user.gender, userId, function (err, reply) {
-				if (err) callback (err, null);
+				if (err) return callback (err, null);
 				redisLib.addToSet(config.genderKey+config.bothKey, userId, function (err, reply) {
-					if (err) callback(err, null);
+					if (err) return callback(err, null);
 					redisLib.setHash(config.usersKey+userId, user, function (err, response) {
 						if (err) return callback(err, null);
 						var userModel = {
 							id: userId,
 							name: user.name,
 							birthday: user.birthday,
+							age: user.age,
 							picture: user.picture,
 							likes: JSON.parse(user.likes),
 							gender: user.gender,
@@ -87,23 +89,23 @@ function deleteUser(userId, callbackDelete) {
 	async.waterfall([
 	    function removeFromUser(callback) {
 	    	redisLib.deleteKey(config.usersKey+userId, function(err, response) {
-				if (err) callbackDelete(err, null);
+				if (err) return callbackDelete(err, null);
 				callback(null);
 			});
 	    },
 	    function removeFromPreferences(callback) {
 	    	redisLib.deleteKey(config.preferencesKey+userId, function(err, response) {
-				if (err) callbackDelete(err, null);
+				if (err) return callbackDelete(err, null);
 				callback(null);
 			});
 	    },
 	    function removeFromGender(callback) {
 	    	redisLib.removeFromSet(config.genderKey+'male', userId, function(err, response) {
-				if (err) callbackDelete(err, null);
+				if (err) return callbackDelete(err, null);
 				redisLib.removeFromSet(config.genderKey+'female', userId, function(err, response) {
-					if (err) callbackDelete(err, null);
+					if (err) return callbackDelete(err, null);
 					redisLib.removeFromSet(config.genderKey+'both', userId, function(err, response) {
-						if (err) callbackDelete(err, null);
+						if (err) return callbackDelete(err, null);
 						return callback(null);
 					});
 				});
@@ -114,7 +116,7 @@ function deleteUser(userId, callbackDelete) {
 	    	redisLib.keys(config.aroundKey+'*', function(err, aroundKeyIds) {
 	    		async.each(aroundKeyIds, function (key, cb) {
 					redisLib.deleteKey(key, function(err, response) {
-						if (err) callbackDelete(err, null);
+						if (err) return callbackDelete(err, null);
 						return cb();
 					});
 				}, function finish(err) {
@@ -126,7 +128,7 @@ function deleteUser(userId, callbackDelete) {
 	    if (error) {
 	    	return callbackDelete(error, null);
 	    }
-	    callbackDelete(null, "OK");
+	    return callbackDelete(null, "OK");
 	});
 } 
 
@@ -142,21 +144,29 @@ function updateFieldUser(user, userUpdate, cbUpdate) {
 
 	}, function(err) {
 		if (err) return cbUpdate(err, null);
-	    cbUpdate(null, "OK");
+	    return cbUpdate(null, "OK");
 	});  
 }
 
 function parseUser(facebookUser, callbackUser) {
 	async.waterfall([
 	    function parseCbLikes(callback) {
-	    	parseLikes(facebookUser.likes.data, function (likes) {
-	    		callback(null, likes);
-	    	});
+	    	if (facebookUser.likes ? true : false ) {
+		    	parseLikes(facebookUser.likes.data, function (likes) {
+		    		callback(null, likes);
+		    	});
+	    	} else {
+	    		callback(null, []);
+	    	}
 	    },
 	    function parseCbEducation(likes, callbackEducation) {
-	    	parseEducation(facebookUser.education, function(education) {
-	    		callbackEducation(null, likes, education);
-	    	})
+	    	if (facebookUser.education ? true : false ) {
+		    	parseEducation(facebookUser.education, function(education) {
+		    		callbackEducation(null, likes, education);
+		    	})
+	    	} else {
+	    		callbackEducation(null, [], []);
+	    	}
 	    }
 	], function (error, likes, education) {
 	    if (error) {
@@ -165,6 +175,7 @@ function parseUser(facebookUser, callbackUser) {
 			id: facebookUser.id,
 			name: facebookUser.name ? facebookUser.name : "",
 			birthday: facebookUser.birthday ? facebookUser.birthday : "",
+			age: facebookUser.age ? facebookUser.age : "",
 			picture: facebookUser.picture.data.url ? facebookUser.picture.data.url : "",
 			likes: JSON.stringify(likes),
 			gender: facebookUser.gender,
@@ -173,7 +184,7 @@ function parseUser(facebookUser, callbackUser) {
 			pictures: JSON.stringify([])
 		}
 		
-	    callbackUser(user);
+	    return callbackUser(user);
 	});
 
 }
@@ -188,7 +199,7 @@ function parseLikes(likes, callbackLikes) {
 		likesParsed.push(likeObj);
 		callback();
 	}, function finish(err) {
-		callbackLikes(likesParsed);
+		return callbackLikes(likesParsed);
 	});
 }
 
@@ -203,8 +214,29 @@ function parseEducation(educations, cbEducation) {
 		educationParsed.push(eduObj);
 		callback();
 	}, function finish(err) {
-		cbEducation(educationParsed);
+		return cbEducation(educationParsed);
 	});
+}
+
+function parseUserForElasticSearch(userId, preferences, callback) {
+	redisLib.getHash(config.usersKey+userId, function(err, user) {
+		if (err) return callback(err, null);
+		if (user) {			
+			var userES = {
+				userId: user.id,
+				location: (user.location) ? JSON.parse(user.location) : '' ,
+				age: user.age,
+				gender: user.gender,
+				mode: preferences.mode,
+				searchMode: preferences.searchMode
+			}
+			elasticSearch.addToIndex('users', 'user', userId, userES, function(error, response) {
+				return callback(null, response);
+			})
+		} else {
+			return callback(null, null);
+		}
+	})
 }
 
 module.exports = {
@@ -212,5 +244,6 @@ module.exports = {
 	createUser: createUser,
 	updateUser: updateUser,
 	deleteUser: deleteUser,
-	parseUser: parseUser
+	parseUser: parseUser,
+	parseUserForElasticSearch: parseUserForElasticSearch
 }

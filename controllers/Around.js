@@ -1,7 +1,8 @@
 'use strict';
-var async 		= require('async');
-var redisLib 	= require('../redisLib');
-var config	 	= require('../config');
+var async 			= require('async');
+var redisLib 		= require('../redisLib');
+var config	 		= require('../config');
+var elasticSearch 	= require('../elasticSearchLib');
 
 function getAroundUsers(userId, callback) {
 	async.waterfall([
@@ -38,7 +39,7 @@ function getAroundUsers(userId, callback) {
 	});
 }
 
-function createAroundUser(userId, callbackAround) {
+/*function createAroundUser(userId, callbackAround) {
 	var responseSave = 0;
 	async.waterfall([
 	    function (callback) {
@@ -136,6 +137,183 @@ function createAroundUser(userId, callbackAround) {
 			}, function finish(err) {
 				//fin foreach
 				if (err) return callback(err, null);
+				return callback(null);
+			});
+	    }
+	], function (error) {
+		// fin primer waterfall
+	    if (error) {
+	    	return callbackAround(error, null);
+	    }
+	    return callbackAround(null, "OK");
+	});
+}
+*/
+
+function createAroundUser(userId, userPreferences, callbackAround) {
+	var responseSave = 0;
+	if (userPreferences.mode == "invisible") {
+		return callbackAround(null, []);
+	}
+	async.waterfall([
+	    function (callback) {
+	    	//get info of my user
+	    	redisLib.getHash(config.usersKey+userId, function (err, user) {
+	    		if (err) return callbackAround(err, null);
+	    		if (!user) {
+	    			return callbackAround(null, null);
+	    		} else {
+					return callback(null, user, userPreferences);
+	    		}
+	    	});
+	    },
+	    function (user, userPreferences, callback) {
+	    	//console.log(" === USER ===");
+	    	//console.log(user);
+	    	//console.log(" === USER PREFERENCES ===");
+	    	//console.log(userPreferences);
+			var defaultLocation = {
+				lat: -34.55,
+				lon: -58.44
+			}
+
+	    	var preferences = {
+	    		query: {
+	    			bool: {
+	    				must: [
+	    					{ match: { gender: userPreferences.gender} },
+	    					{ match: { mode: userPreferences.mode} },
+	    					{ match: { searchMode: userPreferences.searchMode} }
+	    				],
+	    				filter: [
+	    					{ 
+	    						geo_distance: { 
+		    						distance: userPreferences.distance+config.distanceUnit,
+		    						location: (user.location) ? JSON.parse(user.location) : defaultLocation
+		    					}
+	    					},
+	    					{
+	    						range: {
+	    							age: {
+	    								gte: userPreferences.minAge,
+	    								lte: userPreferences.maxAge
+	    							}
+	    						}
+	    					}
+	    				]
+	    			}
+	    		}
+	    	}
+
+	    	elasticSearch.searchInIndex('users', 'user', preferences, function(err, usersMatched) {
+	    		if (err) {
+	    			//console.log("err searching");
+	    			//console.log(err);
+	    			return callbackAround(err, []);
+	    		} else if (usersMatched.length > 0) {
+	    			console.log(" === USERS FOUND ===");
+	    			//console.log(usersMatched);
+	    			return callback(null, user, userPreferences, usersMatched);
+	    		} else {
+	    			console.log(" === USERS NOT FOUND ===");
+	    			return callback(null, user, userPreferences, []);
+	    		}
+	    	})
+	    },
+	    function (user, userPreferences, usersMatched, callback) {
+	    	var usersMatch = [];
+			async.each(usersMatched, function (userMatch, cb) {
+				userMatch = userMatch._source;
+				var match = {
+					id: userMatch.userId,
+					location: userMatch.location,
+					age: userMatch.age,
+					gender: userMatch.gender,
+					mode: userMatch.mode,
+					searchMode: userMatch.searchMode
+				};
+
+				usersMatch.push(match);
+				cb();
+			}, function finish(err) {
+		    	console.log("users matched");
+		    	console.log(usersMatch);
+				return callback(null, user, userPreferences, usersMatch);
+			});
+	    },
+	    function (user, userPreferences, usersMatched, callback) {
+	    	//console.log("users matched after");
+	    	//console.log(usersMatched);
+		    async.each(usersMatched, function (userMatch, callbackIt) {
+				if (userId == userMatch.id) {
+					return callbackIt();
+				}
+				async.waterfall([
+					function (cb) {
+						//parse elastic search response
+						redisLib.getHash(config.usersKey+userMatch.id, function (err, otherUser) {
+							if (err) return callbackIt(err, null);
+							return cb(null, user, otherUser);
+						});
+					},
+				    function (user, otherUser, cb) {
+				    	//obtengo la preferencia del otro user
+				    	redisLib.getHashField(config.preferencesKey+userMatch.id, 'gender', function (err, userPref) {
+				    		//valido si puede haber match
+				    		validatePossibleAround(user.gender, userPreferences.gender, otherUser.gender, userPref, function (validate) {
+				    			if (validate) {
+				    				//agrego a la lista de los around
+				    				redisLib.addToSet(config.aroundKey+userId, userMatch.id, function (err, reply) {
+				    					if (err) return callbackAround(err, null);
+										redisLib.addToSet(config.aroundKey+userMatch.id, userId, function(err, reply) {
+											if (err) return callbackAround(err, null);
+											return cb(null, user, otherUser);
+										});
+									});
+				    			} else {
+				    				return callbackIt();
+				    			}
+				    		})
+				    	});
+				    }, 
+				    function (user, otherUser, cb) {
+
+				    	var userModel = {
+							id: userMatch.id,
+							name: otherUser.name,
+							description: otherUser.description,
+							picture: otherUser.picture,
+							compatibility: 1
+						};
+
+						var actualUserModel = {
+							id: user.id,
+							name: user.name,
+							description: user.description,
+							picture: user.picture,
+							compatibility: 1
+						};
+
+						//save info of around 
+						redisLib.setHash(config.aroundKey+userId+':'+userMatch.id, userModel, function (err, responseSave) {
+							if (err) return cb(err, null);
+							redisLib.setHash(config.aroundKey+userMatch.id+':'+userId, actualUserModel, function (err, responseSave) {
+								if (err) return cb(err, null);
+								return callbackIt();
+							})
+						})
+				    }
+				], function (error) {
+					//fin segundo waterfall
+				    if (error) {
+				    	return callbackAround(error, null);
+				    }
+				 
+				    return cb(null);
+				});
+			}, function finish(err) {
+				//fin foreach
+				if (err) return callbackAround(err, null);
 				return callback(null);
 			});
 	    }
