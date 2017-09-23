@@ -9,12 +9,13 @@ var async 			= require('async');
 var cluster 		= require('cluster');
 
 var config 			= require('./config');
+
 var Routes 			= require('./routes');
 var elasticSearch 	= require('./elasticSearchLib');
 
 if(cluster.isMaster) {
     var numWorkers = require('os').cpus().length;
-
+   
     console.log('Master cluster setting up ' + numWorkers + ' workers...');
 
     for(var i = 0; i < numWorkers; i++) {
@@ -34,7 +35,7 @@ if(cluster.isMaster) {
 	var app        	= express();                 // define our app using express
 
 	var routerExpress = express.Router();              // get an instance of the express Router
-	var routes = Routes.create(routerExpress);
+	var routes = Routes.create(routerExpress, config);
 
 
 	// configure app to use bodyParser()
@@ -72,7 +73,7 @@ if(cluster.isMaster) {
 
 	elasticSearch.indexExists('users', function(err, res) {
 		if (err) {
-			console.log("err");
+			console.log("Error checking if index exists");
 			console.log(err);
 		}
 		if(res) {

@@ -1,17 +1,21 @@
 'use strict';
 
-var Users 		= require('./controllers/User');
-var Preferences = require('./controllers/Preferences');
-var Around 		= require('./controllers/Around');
-var Location 	= require('./controllers/Location');
-var redisLib 	= require('./redisLib'); //testing
+var UsersController 		= require('./controllers/User');
+var PreferencesController 	= require('./controllers/Preferences');
+var AroundController 		= require('./controllers/Around');
+var LocationController 		= require('./controllers/Location');
 
 
 // ROUTES FOR OUR API
 // =============================================================================
 
 
-function create(router) {
+function create(router, config) {
+	this.config = config;
+	this.Around = AroundController.createAroundController(this.config);	
+	this.Users = UsersController.createUsersController(this.config);
+	this.Preferences = PreferencesController.createPreferencesController(this.config, this.Users, this.Around);
+	this.Location = LocationController.createLocationController(this.config);
 	// middleware to use for all requests
 	router.use(function(req, res, next) {
 	    // do logging
@@ -26,14 +30,14 @@ function create(router) {
 				data: "Welcome to linkup API"
 			});	
 		});
-	router = createUserRoutes(router);
-	router = createUserPreferencesRoutes(router);
-	router = createUserAroundRoutes(router);
-	router = createUserLocationRoutes(router);
+	router = createUserRoutes(this.Users, router);
+	router = createUserPreferencesRoutes(this.Preferences, router);
+	router = createUserAroundRoutes(this.Around, router);
+	router = createUserLocationRoutes(this.Location, router);
 	return router;
 }
 
-function createUserRoutes(router) {
+function createUserRoutes(Users, router) {
 	router.route('/users/:user_id')
 	    .get(function(req, res) {
 	    	Users.getUser(req.params.user_id, function(err,response) {
@@ -125,33 +129,14 @@ function createUserRoutes(router) {
 				
 			})
 		})
-
-	router.route('/test')
-		.get(function(req,res) {
-			redisLib.exists("user_101526692901751231", function(error, reply) {
-				if (reply) {
-					res.json({
-						statusCode: 200,
-						data: reply
-					})
-				} else {
-					res.status(500).json({
-						statusCode: 500,
-						data: "error"
-					})
-				}
-			});
-		});
 	return router;
 }
 
-function createUserPreferencesRoutes(router) {
+function createUserPreferencesRoutes(Preferences, router) {
 	router.route('/users/:user_id/preferences')
 		.post(function (req, res) {
 			Preferences.parsePreferences(req.params.user_id, req.body, function(errorParse, preferencesModel) {
 				if (errorParse) {
-					console.log("errorParse");
-					console.log(errorParse);
 					return res.status(500).json({
 						statusCode: 500,
 						data: errorParse
@@ -159,8 +144,6 @@ function createUserPreferencesRoutes(router) {
 				} else {
 					Preferences.createPreferences(req.params.user_id, preferencesModel, function (err, response) {
 						if (err) {
-							console.log("error creating preferences");
-					console.log(err);
 							return res.status(500).json({
 								statusCode: 500,
 								data: err
@@ -222,7 +205,7 @@ function createUserPreferencesRoutes(router) {
 	return router;
 }
 
-function createUserAroundRoutes(router) {
+function createUserAroundRoutes(Around, router) {
 	router.route('/users/:user_id/around')
 		.get(function (req, res) {
 			Around.getAroundUsers(req.params.user_id, function (err, reply) {
@@ -267,7 +250,7 @@ function createUserAroundRoutes(router) {
 	return router;
 }
 
-function createUserLocationRoutes(router) {
+function createUserLocationRoutes(Location, router) {
 	router.route('/users/:user_id/location')
 		.post(function (req, res) {
 			Location.createLocation(req.params.user_id, req.body, function (err, reply) {

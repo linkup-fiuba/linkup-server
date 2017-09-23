@@ -1,11 +1,21 @@
 'use strict';
-var async 		= require('async');
-var redisLib 	= require('../redisLib');
-var config 		= require('../config');
-var elasticSearch = require('../elasticSearchLib');
+
+
+function Location(config) {
+	this.config = config;
+	this.getLocation = getLocation;
+	this.createLocation = createLocation;
+	this.updateLocation = updateLocation;
+}
+
+function createLocationController(config) {
+	return new Location(config);
+}
+
 
 function getLocation(userId, callback) {
-	redisLib.getHashField(config.usersKey+userId, 'location', function(err, response) {
+	var config = this.config;
+	config.redisLib.getHashField(config.usersKey+userId, 'location', function(err, response) {
 		if (err) callback(err, null);
 		if (response) {
 			var locObj = JSON.parse(response);
@@ -21,8 +31,9 @@ function getLocation(userId, callback) {
 }
 
 function createLocation(userId, location, callback) {
+	var config = this.config;
 	location = JSON.stringify(location);
-	redisLib.setHashField(config.usersKey+userId, 'location', location, function (err, response) {
+	config.redisLib.setHashField(config.usersKey+userId, 'location', location, function (err, response) {
 		if (err) return callback(err, null);
 		return callback(null, true);
 	}); 		
@@ -32,11 +43,12 @@ function createLocation(userId, location, callback) {
 
 
 function updateLocation(userId, locationUpdate, callback) {
+	var config = this.config;
 	locationUpdate = JSON.stringify(locationUpdate);
-	redisLib.setHashField(config.usersKey+userId, 'location', locationUpdate, function(error, location) {
+	config.redisLib.setHashField(config.usersKey+userId, 'location', locationUpdate, function(error, location) {
 		if (error) return callback (error, null);
-			//actualizar location en elasticsearch TODO 
-			elasticSearch.addToIndex('users', 'user', userId, {location: JSON.parse(locationUpdate)}, function (err, res) {
+			//actualizar location en this.config.ESLib TODO 
+			config.ESLib.addToIndex('users', 'user', userId, {location: JSON.parse(locationUpdate)}, function (err, res) {
 				if (err) {
 					return callback(null, false);
 				} else {
@@ -49,6 +61,7 @@ function updateLocation(userId, locationUpdate, callback) {
 }
 
 module.exports = {
+	createLocationController: createLocationController,
 	getLocation: getLocation,
 	createLocation: createLocation,
 	updateLocation: updateLocation

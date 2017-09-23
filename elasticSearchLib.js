@@ -10,7 +10,7 @@ var client = new elasticsearch.Client({
 
 
 
-function createClient(callback) {
+function createClient() {
 	var client = new elasticsearch.Client({
 	  host: 'localhost:9200',
 	  log: 'debug'
@@ -152,7 +152,7 @@ function closeConnection() {
 }
 
 module.exports = {
-	elasticsearchClient: client,
+	//elasticsearchClient: client,
 	createClient: createClient,
 	createIndex: createIndex,
 	dropIndex: dropIndex,

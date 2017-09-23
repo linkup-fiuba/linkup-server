@@ -1,11 +1,23 @@
 'use strict';
-var async 			= require('async');
-var redisLib 		= require('../redisLib');
-var config	 		= require('../config');
-var elasticSearch 	= require('../elasticSearchLib');
+
+function Users(config) {
+	this.config = config;
+	this.getUser = getUser,
+	this.createUser = createUser;
+	this.updateUser = updateUser;
+	this.deleteUser = deleteUser;
+	this.parseUser = parseUser;
+	this.parseUserForElasticSearch = parseUserForElasticSearch;
+}
+
+function createUsersController(config) {
+	return new Users(config);
+}
+
 
 function getUser(userId, callback) {
-	redisLib.getHash(config.usersKey+userId, function(err,response) {
+	var config = this.config;
+	config.redisLib.getHash(config.usersKey+userId, function(err,response) {
 		if (err) return callback(err, null);
 		if (response) {
 			var user = {
@@ -29,7 +41,7 @@ function getUser(userId, callback) {
 
 // limit para paginacion
 function getUsers(callback) {
-	redisLib.getHash(config.usersKey, function(err, response) {
+	this.config.redisLib.getHash(config.usersKey, function(err, response) {
 		if (err) callback(err, null);
 		return callback(null, response);
 	})
@@ -37,15 +49,16 @@ function getUsers(callback) {
 
 
 function createUser(userId, user, callback) {
-	redisLib.exists(config.usersKey+userId, function(err, exists) {
+	var config = this.config;
+	config.redisLib.exists(config.usersKey+userId, function(err, exists) {
 		if (exists) {
 			return callback(null, null);
 		} else {
-			redisLib.addToSet(config.genderKey+user.gender, userId, function (err, reply) {
+			config.redisLib.addToSet(config.genderKey+user.gender, userId, function (err, reply) {
 				if (err) return callback (err, null);
-				redisLib.addToSet(config.genderKey+config.bothKey, userId, function (err, reply) {
+				config.redisLib.addToSet(config.genderKey+config.bothKey, userId, function (err, reply) {
 					if (err) return callback(err, null);
-					redisLib.setHash(config.usersKey+userId, user, function (err, response) {
+					config.redisLib.setHash(config.usersKey+userId, user, function (err, response) {
 						if (err) return callback(err, null);
 						var userModel = {
 							id: userId,
@@ -71,7 +84,8 @@ function createUser(userId, user, callback) {
 
 
 function updateUser(userId, userUpdate, callback) {
-	redisLib.getHash(config.usersKey+userId, function(error, user) {
+	var config = this.config;
+	config.redisLib.getHash(config.usersKey+userId, function(error, user) {
 		if (error) return callback (error, null);
 		if (user) {
 			updateFieldUser(user, userUpdate, function (err, response) {
@@ -86,25 +100,26 @@ function updateUser(userId, userUpdate, callback) {
 }
 
 function deleteUser(userId, callbackDelete) {
-	async.waterfall([
+	var config = this.config;
+	config.async.waterfall([
 	    function removeFromUser(callback) {
-	    	redisLib.deleteKey(config.usersKey+userId, function(err, response) {
+	    	config.redisLib.deleteKey(config.usersKey+userId, function(err, response) {
 				if (err) return callbackDelete(err, null);
 				callback(null);
 			});
 	    },
 	    function removeFromPreferences(callback) {
-	    	redisLib.deleteKey(config.preferencesKey+userId, function(err, response) {
+	    	config.redisLib.deleteKey(config.preferencesKey+userId, function(err, response) {
 				if (err) return callbackDelete(err, null);
 				callback(null);
 			});
 	    },
 	    function removeFromGender(callback) {
-	    	redisLib.removeFromSet(config.genderKey+'male', userId, function(err, response) {
+	    	config.redisLib.removeFromSet(config.genderKey+'male', userId, function(err, response) {
 				if (err) return callbackDelete(err, null);
-				redisLib.removeFromSet(config.genderKey+'female', userId, function(err, response) {
+				config.redisLib.removeFromSet(config.genderKey+'female', userId, function(err, response) {
 					if (err) return callbackDelete(err, null);
-					redisLib.removeFromSet(config.genderKey+'both', userId, function(err, response) {
+					config.redisLib.removeFromSet(config.genderKey+'both', userId, function(err, response) {
 						if (err) return callbackDelete(err, null);
 						return callback(null);
 					});
@@ -113,9 +128,9 @@ function deleteUser(userId, callbackDelete) {
 			});
 	    },
 	    function removeFromAround(callback) {
-	    	redisLib.keys(config.aroundKey+'*', function(err, aroundKeyIds) {
-	    		async.each(aroundKeyIds, function (key, cb) {
-					redisLib.deleteKey(key, function(err, response) {
+	    	config.redisLib.keys(config.aroundKey+'*', function(err, aroundKeyIds) {
+	    		config.async.each(aroundKeyIds, function (key, cb) {
+					config.redisLib.deleteKey(key, function(err, response) {
 						if (err) return callbackDelete(err, null);
 						return cb();
 					});
@@ -133,11 +148,11 @@ function deleteUser(userId, callbackDelete) {
 } 
 
 function updateFieldUser(user, userUpdate, cbUpdate) {
-	async.forEach(Object.keys(userUpdate), function (userField, callback){ 
+	this.config.async.forEach(Object.keys(userUpdate), function (userField, callback){ 
 	    if (userUpdate[userField] instanceof Array) {
 	    	userUpdate[userField] = JSON.stringify(userUpdate[userField]);
 	    }
-	    redisLib.setHashField(config.usersKey+user.id,userField,userUpdate[userField], function (err, response) {
+	    this.config.redisLib.setHashField(this.config.usersKey+user.id,userField,userUpdate[userField], function (err, response) {
 			if (err) return cbUpdate(err, null);
 			callback();
 		});
@@ -149,10 +164,11 @@ function updateFieldUser(user, userUpdate, cbUpdate) {
 }
 
 function parseUser(facebookUser, callbackUser) {
-	async.waterfall([
+	var config = this.config;
+	config.async.waterfall([
 	    function parseCbLikes(callback) {
 	    	if (facebookUser.likes ? true : false ) {
-		    	parseLikes(facebookUser.likes.data, function (likes) {
+		    	parseLikes(config, facebookUser.likes.data, function (likes) {
 		    		callback(null, likes);
 		    	});
 	    	} else {
@@ -161,7 +177,7 @@ function parseUser(facebookUser, callbackUser) {
 	    },
 	    function parseCbEducation(likes, callbackEducation) {
 	    	if (facebookUser.education ? true : false ) {
-		    	parseEducation(facebookUser.education, function(education) {
+		    	parseEducation(config, facebookUser.education, function(education) {
 		    		callbackEducation(null, likes, education);
 		    	})
 	    	} else {
@@ -189,9 +205,9 @@ function parseUser(facebookUser, callbackUser) {
 
 }
 
-function parseLikes(likes, callbackLikes) {
+function parseLikes(config, likes, callbackLikes) {
 	var likesParsed = [];
-	async.each(likes, function (like, callback) {
+	config.async.each(likes, function (like, callback) {
 		var likeObj = {
 			name: like.name
 		};
@@ -203,9 +219,9 @@ function parseLikes(likes, callbackLikes) {
 	});
 }
 
-function parseEducation(educations, cbEducation) {
+function parseEducation(config, educations, cbEducation) {
 	var educationParsed = [];
-	async.each(educations, function (education, callback) {
+	config.async.each(educations, function (education, callback) {
 		var eduObj = {
 			name: education.school.name,
 			type: education.type
@@ -219,7 +235,8 @@ function parseEducation(educations, cbEducation) {
 }
 
 function parseUserForElasticSearch(userId, preferences, callback) {
-	redisLib.getHash(config.usersKey+userId, function(err, user) {
+	var config = this.config;
+	config.redisLib.getHash(config.usersKey+userId, function(err, user) {
 		if (err) return callback(err, null);
 		if (user) {			
 			var userES = {
@@ -230,7 +247,7 @@ function parseUserForElasticSearch(userId, preferences, callback) {
 				mode: preferences.mode,
 				searchMode: preferences.searchMode
 			}
-			elasticSearch.addToIndex('users', 'user', userId, userES, function(error, response) {
+			config.ESLib.addToIndex('users', 'user', userId, userES, function(error, response) {
 				return callback(null, response);
 			})
 		} else {
@@ -240,6 +257,7 @@ function parseUserForElasticSearch(userId, preferences, callback) {
 }
 
 module.exports = {
+	createUsersController: createUsersController,
 	getUser: getUser,
 	createUser: createUser,
 	updateUser: updateUser,
