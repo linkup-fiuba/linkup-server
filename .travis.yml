@@ -1,5 +1,9 @@
 services:
   - redis-server
+  - elasticsearch
+before_script:
+  - curl -O https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/5.6.0/elasticsearch-5.6.0.deb && sudo dpkg -i --force-confnew elasticsearch-5.6.0.deb && sudo service elasticsearch restart
+
 language: node_js
 node_js:
   - "6"

@@ -1,11 +1,22 @@
 'use strict';
-var async 		= require('async');
-var redisLib 	= require('../redisLib');
-var config 		= require('../config');
-var Around	 	= require('./Around');
+
+function Preferences(config, user, around) {
+	this.config = config;
+	this.User = user;
+	this.Around = around;
+	this.getPreferences = getPreferences;
+	this.createPreferences = createPreferences;
+	this.updatePreferences = updatePreferences;
+	this.parsePreferences = parsePreferences;
+}
+
+function createPreferencesController(config, user, around) {
+	return new Preferences(config, user, around);
+}
 
 function getPreferences(userId, callback) {
-	redisLib.getHash(config.preferencesKey+userId, function(err,response) {
+	var config = this.config;
+	config.redisLib.getHash(config.preferencesKey+userId, function(err,response) {
 		if (err) callback(err, null);
 		if (response) {
 			var preferences = {
@@ -25,23 +36,39 @@ function getPreferences(userId, callback) {
 }
 
 function createPreferences(userId, preferences, callback) {
-	redisLib.setHash(config.preferencesKey+userId, preferences, function (err, response) {
-		if (err) return callback(err, null);
+	var config = this.config;
+	var Around = this.Around;
+	var User = this.User;
+	config.redisLib.setHash(config.preferencesKey+userId, preferences, function (err, response) {
+		if (err) {
+			return callback(err, null);
+		}
 		Around.deleteAroundUsers(userId, function (err, userIds) {
-			if (err) return callback(err, null);
-			Around.createAroundUser(userId, function (err, response) {
-				return callback(null, response);
+			if (err) {
+				return callback(err, null);
+			}
+			User.parseUserForElasticSearch(userId, preferences, function(error, responseES) {
+				if (error) {
+					return callback(error, null);
+				}
+				if (responseES) {
+					Around.createAroundUser(userId, preferences, function (err, response) {
+						if (err) return callback(err, null);
+						else {
+							return callback(null, "OK");
+						}
+					})
+					//return callback(null, response);
+				} else {
+					return callback(null, false);
+				}
 			})
-			// body...
 		})
-	}); 		
-		
-
+	}); 
 }
 
-
 function updatePreferences(userId, preferencesUpdate, callback) {
-	redisLib.getHash(config.preferencesKey+userId, function(error, preferences) {
+	config.redisLib.getHash(config.preferencesKey+userId, function(error, preferences) {
 		if (error) return callback (error, null);
 		if (preferences) {
 			updateFieldPreferences(preferences, preferencesUpdate, function (err, response) {
@@ -56,11 +83,11 @@ function updatePreferences(userId, preferencesUpdate, callback) {
 }
 
 function updateFieldPreferences(preferences, preferencesUpdate, cbUpdate) {
-	async.forEach(Object.keys(preferencesUpdate), function (preferencesField, callback){ 
+	config.async.forEach(Object.keys(preferencesUpdate), function (preferencesField, callback){ 
 	    if (preferencesUpdate[preferencesField] instanceof Array) {
 	    	preferencesUpdate[preferencesField] = JSON.stringify(preferencesUpdate[preferencesField]);
 	    }
-	    redisLib.setHashField(config.preferencesKey+preferences.userId,preferencesField,preferencesUpdate[preferencesField], function (err, response) {
+	    config.redisLib.setHashField(config.preferencesKey+preferences.userId,preferencesField,preferencesUpdate[preferencesField], function (err, response) {
 			if (err) return cbUpdate(err, null);
 			callback();
 		});
@@ -72,7 +99,8 @@ function updateFieldPreferences(preferences, preferencesUpdate, cbUpdate) {
 }
 
 function parsePreferences(userId, preferences, callbackPreferences) {
-	async.waterfall([
+	var config = this.config;
+	config.async.waterfall([
 	    function parseGender(callback) {
 	    	if (preferences.gender != "female" && preferences.gender != "male" && preferences.gender != "both") {
 	    		callbackPreferences("Gender not supported", null);
@@ -113,12 +141,12 @@ function parsePreferences(userId, preferences, callbackPreferences) {
 
 }
 
-
 function removePreferences(userId) {
 	
 }
 
 module.exports = {
+	createPreferencesController: createPreferencesController,
 	getPreferences: getPreferences,
 	createPreferences: createPreferences,
 	updatePreferences: updatePreferences,
