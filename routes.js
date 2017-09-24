@@ -4,6 +4,7 @@ var UsersController 		= require('./controllers/User');
 var PreferencesController 	= require('./controllers/Preferences');
 var AroundController 		= require('./controllers/Around');
 var LocationController 		= require('./controllers/Location');
+var ConfigurationController = require('./controllers/Configuration');
 
 
 // ROUTES FOR OUR API
@@ -16,6 +17,7 @@ function create(router, config) {
 	this.Users = UsersController.createUsersController(this.config);
 	this.Preferences = PreferencesController.createPreferencesController(this.config, this.Users, this.Around);
 	this.Location = LocationController.createLocationController(this.config);
+	this.Configuration = ConfigurationController.createConfigurationController(this.config);
 	// middleware to use for all requests
 	router.use(function(req, res, next) {
 	    // do logging
@@ -34,6 +36,7 @@ function create(router, config) {
 	router = createUserPreferencesRoutes(this.Preferences, router);
 	router = createUserAroundRoutes(this.Around, router);
 	router = createUserLocationRoutes(this.Location, router);
+	router = createConfigurationRoutes(this.Configuration, router);
 	return router;
 }
 
@@ -250,6 +253,59 @@ function createUserAroundRoutes(Around, router) {
 	return router;
 }
 
+function createConfigurationRoutes(Configuration, router) {
+	router.route('/config')
+		.post(function (req, res) {
+			Configuration.setConfig(req.body, function (err, reply) {
+				if (err) {
+	    			return res.status(500).json({
+	    				statusCode: 500,
+	    				data: err
+	    			});
+	    		}
+	    		
+		    	return res.json({
+					statusCode: 200,
+					data: reply
+				});
+	    		
+			});
+		})
+		.get(function (req, res) {
+			Configuration.getConfig(function (err, reply) {
+				if (err) {
+	    			return res.status(500).json({
+	    				statusCode: 500,
+	    				data: err
+	    			});
+	    		}
+	    		
+		    	return res.json({
+					statusCode: 200,
+					data: reply
+				});
+	    		
+	    	})
+		})
+		.put(function (req, res) {
+			Configuration.updateConfig(req.body, function (err, reply) {
+				if (err) {
+	    			return res.status(500).json({
+	    				statusCode: 500,
+	    				data: err
+	    			});
+	    		}
+	    		
+		    	return res.json({
+					statusCode: 200,
+					data: reply
+				});
+			})
+		})
+		
+	return router;
+}
+
 function createUserLocationRoutes(Location, router) {
 	router.route('/users/:user_id/location')
 		.post(function (req, res) {
@@ -302,8 +358,6 @@ function createUserLocationRoutes(Location, router) {
 		
 	return router;
 }
-
-
 
 module.exports = {
 	create: create

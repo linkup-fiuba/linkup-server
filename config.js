@@ -6,9 +6,10 @@ var config = {};
 
 
 config.ESLib = elasticSearchLib;
-config.limit = 10;
-config.distanceUnit = 'km';
-config.maxDistanceSearch = 50;
+config.limitDefault = 10;
+config.distanceUnitDefault = 'km';
+config.maxDistanceSearchDefault = 50;
+config.maxAgeDefault = 99;
 config.aroundKey = 'around_';
 config.preferencesKey = 'preferences_';
 config.genderKey = 'gender_';
