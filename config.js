@@ -6,13 +6,17 @@ var config = {};
 
 
 config.ESLib = elasticSearchLib;
-config.limit = 10;
-config.distanceUnit = 'km';
-config.maxDistanceSearch = 50;
+config.limitDefault = 10;
+config.distanceUnitDefault = 'km';
+config.maxDistanceSearchDefault = 50;
+config.maxAgeDefault = 99;
 config.aroundKey = 'around_';
 config.preferencesKey = 'preferences_';
 config.genderKey = 'gender_';
 config.usersKey = 'user_';
+config.likesKey = 'likes_';
+config.linksKey = 'links_';
+config.linkKey = 'link_';
 config.shown = '_shown';
 config.bothKey = 'both';
 config.redisLib = redisLib;

@@ -93,6 +93,13 @@ function getFromSet(key, callback) {
 	})
 }
 
+function isMember(key, value, callback) {
+	client.sismember(key, value, function (err, reply) {
+		if (err) callback(err, null);
+		return callback(null, reply);
+	})
+}
+
 function keys(key, callback) {
 	client.keys(key, function (err, reply) {
 		if (err) return callback(err, null);
@@ -114,5 +121,6 @@ module.exports = {
 	removeFromSet: removeFromSet,
 	getFromSet: getFromSet,
 	addToSet: addToSet,
-	keys: keys
+	keys: keys,
+	isMember: isMember
 }
