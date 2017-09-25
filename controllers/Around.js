@@ -79,14 +79,19 @@ function createAroundUser(userId, userPreferences, callbackAround) {
 				lon: -58.44
 			}
 
+			var matches = [
+	    		{ match: { mode: userPreferences.mode} },
+	    		{ match: { searchMode: userPreferences.searchMode} }
+			];
+
+			if (userPreferences.gender != 'both') {
+				matches.push({ match: { gender: userPreferences.gender} });
+			}
+
 	    	var preferences = {
 	    		query: {
 	    			bool: {
-	    				must: [
-	    					{ match: { gender: userPreferences.gender} },
-	    					{ match: { mode: userPreferences.mode} },
-	    					{ match: { searchMode: userPreferences.searchMode} }
-	    				],
+	    				must: matches,
 	    				filter: [
 	    					{ 
 	    						geo_distance: { 
@@ -106,6 +111,8 @@ function createAroundUser(userId, userPreferences, callbackAround) {
 	    			}
 	    		}
 	    	}
+
+
 
 	    	config.ESLib.searchInIndex('users', 'user', preferences, function(err, usersMatched) {
 	    		if (err) {
