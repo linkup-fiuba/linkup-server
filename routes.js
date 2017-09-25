@@ -5,6 +5,8 @@ var PreferencesController 	= require('./controllers/Preferences');
 var AroundController 		= require('./controllers/Around');
 var LocationController 		= require('./controllers/Location');
 var ConfigurationController = require('./controllers/Configuration');
+var LinkController 			= require('./controllers/Link');
+var LikesController			= require('./controllers/Likes');
 
 
 // ROUTES FOR OUR API
@@ -18,6 +20,8 @@ function create(router, config) {
 	this.Preferences = PreferencesController.createPreferencesController(this.config, this.Users, this.Around);
 	this.Location = LocationController.createLocationController(this.config);
 	this.Configuration = ConfigurationController.createConfigurationController(this.config);
+	this.Link = LinkController.createLinkController(this.config);
+	this.Likes = LikesController.createLikesController(this.config, this.Link);
 	// middleware to use for all requests
 	router.use(function(req, res, next) {
 	    // do logging
@@ -37,6 +41,7 @@ function create(router, config) {
 	router = createUserAroundRoutes(this.Around, router);
 	router = createUserLocationRoutes(this.Location, router);
 	router = createConfigurationRoutes(this.Configuration, router);
+	router = createLikesRoutes(this.Likes, router);
 	return router;
 }
 
@@ -342,6 +347,61 @@ function createUserLocationRoutes(Location, router) {
 		})
 		.put(function (req, res) {
 			Location.updateLocation(req.params.user_id, req.body, function (err, reply) {
+				if (err) {
+	    			return res.status(500).json({
+	    				statusCode: 500,
+	    				data: err
+	    			});
+	    		}
+	    		
+		    	return res.json({
+					statusCode: 200,
+					data: reply
+				});
+			})
+		})
+		
+	return router;
+}
+
+
+function createLikesRoutes(Likes, router) {
+	router.route('/users/:user_id/likes')
+		.post(function (req, res) {
+			Likes.setLike(req.params.user_id, req.body.userId, function (err, reply) {
+				if (err) {
+	    			return res.status(500).json({
+	    				statusCode: 500,
+	    				data: err
+	    			});
+	    		}
+	    		
+		    	return res.json({
+					statusCode: 200,
+					data: reply
+				});
+	    		
+			});
+		})
+		.get(function (req, res) {
+			Likes.getLikes(req.params.user_id, function (err, reply) {
+				if (err) {
+	    			return res.status(500).json({
+	    				statusCode: 500,
+	    				data: err
+	    			});
+	    		}
+	    		
+		    	return res.json({
+					statusCode: 200,
+					data: reply
+				});
+	    		
+	    	})
+		});
+	router.route('/users/:user_id/likes/:remove_id')
+		.delete(function (req, res) {
+			Likes.removeLike(req.params.user_id, req.params.remove_id, function (err, reply) {
 				if (err) {
 	    			return res.status(500).json({
 	    				statusCode: 500,
