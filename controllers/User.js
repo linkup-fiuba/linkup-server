@@ -88,7 +88,7 @@ function updateUser(userId, userUpdate, callback) {
 	config.redisLib.getHash(config.usersKey+userId, function(error, user) {
 		if (error) return callback (error, null);
 		if (user) {
-			updateFieldUser(user, userUpdate, function (err, response) {
+			updateFieldUser(config, user, userUpdate, function (err, response) {
 				if (err) callback(err, null);
 				return callback(null, response);
 			})
@@ -147,12 +147,12 @@ function deleteUser(userId, callbackDelete) {
 	});
 } 
 
-function updateFieldUser(user, userUpdate, cbUpdate) {
-	this.config.async.forEach(Object.keys(userUpdate), function (userField, callback){ 
+function updateFieldUser(config, user, userUpdate, cbUpdate) {
+	config.async.forEach(Object.keys(userUpdate), function (userField, callback){ 
 	    if (userUpdate[userField] instanceof Array) {
 	    	userUpdate[userField] = JSON.stringify(userUpdate[userField]);
 	    }
-	    this.config.redisLib.setHashField(this.config.usersKey+user.id,userField,userUpdate[userField], function (err, response) {
+	    config.redisLib.setHashField(config.usersKey+user.id,userField,userUpdate[userField], function (err, response) {
 			if (err) return cbUpdate(err, null);
 			callback();
 		});
