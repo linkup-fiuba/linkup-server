@@ -90,7 +90,7 @@ function createAroundUser(userId, userPreferences, callbackAround) {
 	    				filter: [
 	    					{ 
 	    						geo_distance: { 
-		    						distance: userPreferences.distance+distanceUnit,
+		    						distance: userPreferences.distance+(distanceUnit ? distanceUnit : config.distanceUnitDefault),
 		    						location: (user.location) ? JSON.parse(user.location) : defaultLocation
 		    					}
 	    					},

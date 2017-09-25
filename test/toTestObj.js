@@ -569,7 +569,7 @@ var maleUserAround = {
     name: "Martin Gonzalez" ,
     picture: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2",
     description: "",
-    compatibility: "1"
+    like: false
   
 }
 
@@ -579,7 +579,7 @@ var maleUserAroundTwo = {
     name: "Agustin Gimenez" ,
     picture: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2",
     description: "",
-    compatibility: "1"
+    like: false
   
 }
 
@@ -589,7 +589,7 @@ var maleUserAroundThree = {
     name: "Juan Perez" ,
     picture: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2",
     description: "",
-    compatibility: "1"
+    like: false
   
 }
 
@@ -599,7 +599,7 @@ var maleUserAroundFour = {
     name: "Arnaldo Paredes" ,
     picture: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2",
     description: "",
-    compatibility: "1"
+    like: false
   
 }
 
@@ -609,7 +609,7 @@ var femaleUserAround = {
     name: "Samanta Loiza" ,
     picture: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2",
     description: "",
-    compatibility: "1"
+    like: false
   
 }
 
@@ -619,7 +619,7 @@ var femaleUserAroundTwo = {
     name: "Mirtha Legrand" ,
     picture: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2",
     description: "",
-    compatibility: "1"
+    like: false
   
 }
 
@@ -629,7 +629,7 @@ var femaleUserAroundThree = {
     name: "Josefina Couto" ,
     picture: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2",
     description: "",
-    compatibility: "1"
+    like: false
   
 }
 
@@ -639,7 +639,7 @@ var femaleUserAroundFour = {
     name: "Andrea Rincon" ,
     picture: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2",
     description: "",
-    compatibility: "1"
+    like: false
   
 }
 
