@@ -252,6 +252,12 @@ function deleteAroundUser(userId, userIdRemove, callbackDelete) {
 				if (err) return callback(err, null);
 				return callback(null);		
 			})
+	    },
+	    function (callback) {
+	    	config.redisLib.deleteKey(config.aroundKey+userId+config.shown, function (err, replyRemOne) {
+				if (err) return callback(err, null);
+				return callback(null);		
+			})
 	    }
 	], function (error) {
 	    if (error) {
@@ -289,6 +295,12 @@ function deleteAroundUsers(userId, callbackDelete) {
 								if (err) return callback(err, null);
 								return callback(null);
 							})		
+						})
+				    },
+				    function (callback) {
+				    	config.redisLib.deleteKey(config.aroundKey+userId+config.shown, function (err, replyRemOne) {
+							if (err) return callback(err, null);
+							return callback(null);		
 						})
 				    }
 				], function (error) {
