@@ -42,6 +42,7 @@ function create(router, config) {
 	router = createUserLocationRoutes(this.Location, router);
 	router = createConfigurationRoutes(this.Configuration, router);
 	router = createLikesRoutes(this.Likes, router);
+	router = createLinkRoutes(this.Link, router);
 	return router;
 }
 
@@ -416,6 +417,27 @@ function createLikesRoutes(Likes, router) {
 			})
 		})
 		
+	return router;
+}
+
+function createLinkRoutes(Link, router) {
+	router.route('/users/:user_id/links')
+		.get(function (req, res) {
+			Link.getLinks(req.params.user_id, function (err, reply) {
+				if (err) {
+	    			return res.status(500).json({
+	    				statusCode: 500,
+	    				data: err
+	    			});
+	    		}
+	    		
+		    	return res.json({
+					statusCode: 200,
+					data: reply
+				});
+	    		
+			});
+		});
 	return router;
 }
 
