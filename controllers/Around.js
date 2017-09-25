@@ -341,7 +341,7 @@ function getUsersAround(config, userId, userIdsAround, userIdsAroundShown, cbUse
 								name: user.name,
 	        					picture: user.picture,
 								description: user.description,
-								compatibility: user.compatibility
+								like: user.like
 							};
 							users.push(userModel);
 							config.redisLib.addToSet(config.aroundKey+userId+config.shown, id, function(err, response) {
