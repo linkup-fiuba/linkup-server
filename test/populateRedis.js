@@ -128,7 +128,7 @@ config.async.waterfall([
 					Users.createUser(userParsed.id, userParsed, function (err, response) {
 					console.log("========");
 						if (response) {
-							Location.updateLocation(userParsed.id, objects.locationOne, function (err, response) {
+							Location.updateLocation(userParsed.id, objects.locationFour, function (err, response) {
 								if (response) {
 									Preferences.parsePreferences(userParsed.id, objects.userThreePreferences, function (err, prefParsed) {
 										if (prefParsed) {
@@ -253,7 +253,7 @@ config.async.waterfall([
 					Users.createUser(userParsed.id, userParsed, function (err, response) {
 					console.log("========");
 						if (response) {
-							Location.updateLocation(userParsed.id, objects.locationTwo, function (err, response) {
+							Location.updateLocation(userParsed.id, objects.locationFour, function (err, response) {
 								if (response) {
 									Preferences.parsePreferences(userParsed.id, objects.userEightPreferences, function (err, prefParsed) {
 										if (prefParsed) {

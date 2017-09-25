@@ -44,10 +44,16 @@ function setLike(userId, userIdLiked, callback) {
 				if (response) {
 					Link.createLink(userId, userIdLiked, function (err, response) {
 						if (err) return callback(err, null);
-						return callback(null, response);
+						var responseLike = {
+							link: response
+						}
+						return callback(null, responseLike);
 					});
 				} else {
-					return callback(null, true);
+					var responseLike = {
+							link: false
+					}
+					return callback(null, responseLike);
 				}
 			});
 			
