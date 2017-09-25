@@ -14,7 +14,33 @@ function createLinkController(config) {
 
 
 function getLinks(userId, callback) {
-	
+	var config = this.config;
+	config.redisLib.getFromSet(config.linksKey+userId, function (err, ids) {
+		var links = [];
+		config.async.each(ids, function (id, callbackIt) {
+			config.redisLib.getHash(config.linkKey+userId+":"+id, function (err, linkData) {
+				if (err) return callbackIt(err, null);
+				if (!linkData) {
+					return callbackIt();
+				} else {
+					console.log(linkData);
+					var linkObj = {
+						id: linkData.id,
+						name: linkData.name,
+						picture: linkData.picture,
+						dateOfLink: linkData.dateOfLink
+					};
+
+					links.push(linkObj);
+					callbackIt();					
+				}
+			});
+		}, function finish(err) {
+			if (err) return callback(err, null);
+			return callback(null, links);
+		});
+
+	})
 }
 
 function createLink(userId, userIdLinked, callback) {
