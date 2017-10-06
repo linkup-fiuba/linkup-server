@@ -138,6 +138,20 @@ function createUserRoutes(Users, router) {
 				});
 				
 			})
+		})
+		.get(function (err, res) {
+			Users.getUsers(function (err, response) {
+				if (err) {
+					return res.status(500).json({
+						statusCode: 500,
+						data: err
+					});
+				}
+				return res.status(200).json({
+							statusCode: 200,
+							data: response
+						});
+			})
 		});
 
 		

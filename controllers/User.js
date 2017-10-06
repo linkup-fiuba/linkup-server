@@ -10,12 +10,48 @@ function Users(config) {
 	this.reportUser = reportUser;
 	this.getReportedUsers = getReportedUsers;
 	this.parseUserForElasticSearch = parseUserForElasticSearch;
+	this.getUsers = getUsers;
 }
 
 function createUsersController(config) {
 	return new Users(config);
 }
 
+function getUsers(callback) {
+	var config = this.config;
+	config.redisLib.keys(config.usersKey+'*', function (err, keysUser) {
+		var users = [];
+		config.async.each(keysUser, function (key, callbackIt) {
+			config.redisLib.getHash(key, function(err,response) {
+				if (err) return callback(err, null);
+				if (response) {
+					var user = {
+						id: response.id,
+						name: response.name,
+						birthday: response.birthday,
+						age: response.age,
+						picture: response.picture,
+						likes: JSON.parse(response.likes),
+						gender: response.gender,
+						education: JSON.parse(response.education),
+						description: response.description,
+						pictures: JSON.parse(response.pictures),
+						location: JSON.parse(response.location)
+					}
+					users.push(user);
+					callbackIt();
+				} else {
+					return callbackIt();
+				}
+			})
+
+			
+		}, function finish(err) {
+			return callback(null, users);
+		});
+	})
+
+}
 
 function getUser(userId, callback) {
 	var config = this.config;
@@ -32,7 +68,8 @@ function getUser(userId, callback) {
 				gender: response.gender,
 				education: JSON.parse(response.education),
 				description: response.description,
-				pictures: JSON.parse(response.pictures)
+				pictures: JSON.parse(response.pictures),
+				location: JSON.parse(response.location)
 			}
 			return callback(null, user);
 		} else {
@@ -41,13 +78,6 @@ function getUser(userId, callback) {
 	})
 }
 
-// limit para paginacion
-function getUsers(callback) {
-	this.config.redisLib.getHash(config.usersKey, function(err, response) {
-		if (err) callback(err, null);
-		return callback(null, response);
-	})
-}
 
 
 function createUser(userId, user, callback) {
@@ -310,5 +340,6 @@ module.exports = {
 	parseUser: parseUser,
 	reportUser: reportUser,
 	getReportedUsers: getReportedUsers,
-	parseUserForElasticSearch: parseUserForElasticSearch
+	parseUserForElasticSearch: parseUserForElasticSearch,
+	getUsers: getUsers
 }
