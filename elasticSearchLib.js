@@ -65,8 +65,6 @@ function addToIndex(indexName, indexType, id, indexBody, callback) {
   	if (error) {
   		return callback(error, null);
   	} else {
-	  	console.log("=== add to index ===");
-	  	console.log(indexBody);
 	  	return callback(null, response);
   	}
   });
@@ -92,10 +90,8 @@ function searchInIndex(indexName, indexType, indexMatch, callback) {
 		
 	}, function (error, response, status) {
 		if (error){
-			console.log("search error: "+error);
 			return callback(error, null);
 		} else {
-			console.log(response.hits);
 			return callback(null, response.hits.hits);
 		}
 	});
@@ -135,12 +131,8 @@ function initMapping(indexName, indexType, properties, callback) {
 function getMapping(indexName, callback) {
 	client.indices.getMapping({index: indexName}, function(error, response) {
     if (error) {
-        console.log("error");
-        console.log(error);
         return callback(error, null);
     } else {
-    	console.log("MAPPING");
-        console.log(response.users);
         console.log(null, response);
     }
 });

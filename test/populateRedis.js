@@ -89,6 +89,8 @@ config.async.waterfall([
 									})
 								}
 							})
+						} else {
+							return callback(null);
 						}
 					})
 				} else {
@@ -114,6 +116,8 @@ config.async.waterfall([
 									})
 								}
 							})
+						}  else {
+							return callback(null);
 						}
 					})
 				} else {
@@ -140,6 +144,8 @@ config.async.waterfall([
 									})
 								}
 							})
+						}  else {
+							return callback(null);
 						}
 					})
 				} else {
@@ -165,6 +171,8 @@ config.async.waterfall([
 									})
 								}
 							})
+						}  else {
+							return callback(null);
 						}
 					})
 				} else {
@@ -190,6 +198,8 @@ config.async.waterfall([
 									})
 								}
 							})
+						}  else {
+							return callback(null);
 						}
 					})
 				} else {
@@ -215,6 +225,8 @@ config.async.waterfall([
 									})
 								}
 							})
+						}  else {
+							return callback(null);
 						}
 					})
 				} else {
@@ -240,6 +252,8 @@ config.async.waterfall([
 									})
 								}
 							})
+						}  else {
+							return callback(null);
 						}
 					})
 				} else {
@@ -265,6 +279,8 @@ config.async.waterfall([
 									})
 								}
 							})
+						}  else {
+							return callback(null);
 						}
 					})
 				} else {
@@ -290,6 +306,35 @@ config.async.waterfall([
 									})
 								}
 							})
+						}  else {
+							return callback(null);
+						}
+					})
+				} else {
+					console.log("ERROR PARSED");
+				}
+			})
+	    },
+	    function (callback) {
+	    	Users.parseUser(objects.femaleUserFive, function (userParsed) {
+				if (userParsed) {
+					Users.createUser(userParsed.id, userParsed, function (err, response) {
+					console.log("========");
+						if (response) {
+							Location.updateLocation(userParsed.id, objects.locationThree, function (err, response) {
+								if (response) {
+									Preferences.parsePreferences(userParsed.id, objects.userNinePreferences, function (err, prefParsed) {
+										if (prefParsed) {
+											Preferences.createPreferences(userParsed.id, prefParsed, function (err, response) {
+												console.log("user created");	
+												callback(null);
+											})
+										}
+									})
+								}
+							})
+						}  else {
+							return callback(null);
 						}
 					})
 				} else {
