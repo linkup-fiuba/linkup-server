@@ -36,7 +36,7 @@ function create(router, config) {
 				data: "Welcome to linkup API"
 			});	
 		});
-	router = createUserRoutes(this.Users, router);
+	router = createUserRoutes(this.Users, this.Preferences, router);
 	router = createUserPreferencesRoutes(this.Preferences, router);
 	router = createUserAroundRoutes(this.Around, router);
 	router = createUserLocationRoutes(this.Location, router);
@@ -47,7 +47,7 @@ function create(router, config) {
 	return router;
 }
 
-function createUserRoutes(Users, router) {
+function createUserRoutes(Users, Preferences, router) {
 	router.route('/users/:user_id')
 	    .get(function(req, res) {
 	    	Users.getUser(req.params.user_id, function(err,response) {
@@ -117,7 +117,7 @@ function createUserRoutes(Users, router) {
 	router.route('/users')
 		.post(function(req,res) {
 			Users.parseUser(req.body, function(userModel) {
-				Users.createUser(userModel.id, userModel, function(err, response) {
+				Users.createUser(userModel.id, userModel,  Preferences, function(err, response) {
 					if (err) {
 						return res.status(500).json({
 							statusCode: 500,

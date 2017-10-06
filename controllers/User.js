@@ -80,7 +80,8 @@ function getUser(userId, callback) {
 
 
 
-function createUser(userId, user, callback) {
+function createUser(userId, user, Preferences, callback) {
+	var Preferences = Preferences;
 	var config = this.config;
 	config.redisLib.exists(config.usersKey+userId, function(err, exists) {
 		if (exists) {
@@ -92,19 +93,33 @@ function createUser(userId, user, callback) {
 					if (err) return callback(err, null);
 					config.redisLib.setHash(config.usersKey+userId, user, function (err, response) {
 						if (err) return callback(err, null);
-						var userModel = {
-							id: userId,
-							name: user.name,
-							birthday: user.birthday,
-							age: user.age,
-							picture: user.picture,
-							likes: JSON.parse(user.likes),
-							gender: user.gender,
-							education: JSON.parse(user.education),
-							description: user.description,
-							pictures: JSON.parse(user.pictures)
+						var minAge = ((user.age -5) < 18) ? 18 : (user.age -5);
+						var maxAge = parseInt(user.age) + 5;
+						var defaultPreferences = {
+							gender: 'both',
+							distance: 10,
+							minAge: minAge,
+							maxAge: maxAge,
+							mode: 'visible',
+							searchMode: 'couple'
 						}
-						return callback(null, userModel);
+						Preferences.createPreferences(userId, defaultPreferences, function (err, response) {
+							if (err) return callback(err, null);
+							var userModel = {
+								id: userId,
+								name: user.name,
+								birthday: user.birthday,
+								age: user.age,
+								picture: user.picture,
+								likes: JSON.parse(user.likes),
+								gender: user.gender,
+								education: JSON.parse(user.education),
+								description: user.description,
+								pictures: JSON.parse(user.pictures)
+							}
+							return callback(null, userModel);
+							
+						})
 					});
 
 				});
