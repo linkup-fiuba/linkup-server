@@ -7,6 +7,8 @@ function Users(config) {
 	this.updateUser = updateUser;
 	this.deleteUser = deleteUser;
 	this.parseUser = parseUser;
+	this.reportUser = reportUser;
+	this.getReportedUsers = getReportedUsers;
 	this.parseUserForElasticSearch = parseUserForElasticSearch;
 }
 
@@ -202,7 +204,50 @@ function parseUser(facebookUser, callbackUser) {
 		
 	    return callbackUser(user);
 	});
+}
 
+function reportUser(userId, userBody, callback) {
+	var config = this.config;
+	if (userBody.userId == undefined) {
+		return callback(null, "Empty User Id");
+	} else {
+		var reportedUser = {
+			userIdReporter: userId,
+			userId: userBody.userId,
+			reason: (userBody.reason != undefined) ? userBody.reason : ""
+		}
+		config.redisLib.addToSet(config.reportedKey, userBody.userId, function (err, response) {
+			if (err) return callback(err, null);
+			config.redisLib.setHash(config.reportedUserKey+userBody.userId, reportedUser, function (err, response) {
+				if (err) return callback(err, null);
+				return callback(null, true);
+			})
+		})
+	}
+}
+
+function getReportedUsers(callback) {
+	console.log("WTF");
+	var config = this.config;
+	config.redisLib.getFromSet(config.reportedKey, function(err, usersReportedIds) {
+		var usersReported = [];
+		config.async.each(usersReportedIds, function (userId, callbackIt) {
+			config.redisLib.getHash(config.reportedUserKey+userId, function (err, user) {
+				var userReported = {
+					userIdReporter: user.userIdReporter,
+					userId: user.userId,
+					reason: user.reason
+				};
+				usersReported.push(userReported);
+				callbackIt();
+				
+			})
+
+		}, function finish(err) {
+			if (err) return callback(err, null);
+			return callback(null, usersReported);
+		});
+	})
 }
 
 function parseLikes(config, likes, callbackLikes) {
@@ -263,5 +308,7 @@ module.exports = {
 	updateUser: updateUser,
 	deleteUser: deleteUser,
 	parseUser: parseUser,
+	reportUser: reportUser,
+	getReportedUsers: getReportedUsers,
 	parseUserForElasticSearch: parseUserForElasticSearch
 }

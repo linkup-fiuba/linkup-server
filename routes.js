@@ -43,6 +43,7 @@ function create(router, config) {
 	router = createConfigurationRoutes(this.Configuration, router);
 	router = createLikesRoutes(this.Likes, router);
 	router = createLinkRoutes(this.Link, router);
+	router = createReportedRoutes(this.Users, router);
 	return router;
 }
 
@@ -137,6 +138,59 @@ function createUserRoutes(Users, router) {
 				});
 				
 			})
+		});
+
+		
+	return router;
+}
+
+function createReportedRoutes(Users, router) {
+	router.route('/users/:user_id/report')
+		.post(function(req,res) {
+			Users.reportUser(req.params.user_id, req.body, function(err, response) {
+				if (err) {
+					return res.status(500).json({
+						statusCode: 500,
+						data: err
+					});
+				}
+				if (!response) {
+					return res.status(404).json({
+						statusCode: 404,
+						data: "Error"
+					});	
+				} else {
+			    	return res.status(200).json({
+						statusCode: 200,
+						data: response
+					});
+				}
+			});
+		})
+
+	router.route('/reported')
+		.get(function(req,res) {
+			Users.getReportedUsers(function(err, response) {
+				console.log("response");
+				console.log(response);
+				if (err) {
+					return res.status(500).json({
+						statusCode: 500,
+						data: err
+					});
+				}
+				if (!response) {
+					return res.status(404).json({
+						statusCode: 404,
+						data: "Error"
+					});	
+				} else {
+			    	return res.status(200).json({
+						statusCode: 200,
+						data: response
+					});
+				}
+			});
 		})
 	return router;
 }

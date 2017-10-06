@@ -386,7 +386,7 @@ var femaleUserFive = {
   age: "24",
   picture: {
     data: {
-      url: "https://scontent.xx.fbcdn.net/v/t1.0-1/p50x50/13912571_10154556791580967_9146574132461188875_n.jpg?oh=480f549e46d5aff420ffa44a616a0167&oe=5A5CF8A2"
+      url: "https://i.pinimg.com/736x/61/a2/07/61a20750e1a0551d888dc1920580e441--black-hats-chat-board.jpg"
     }
   },
   likes: {
@@ -574,6 +574,14 @@ var userEightPreferences = {
   searchMode:"couple"
 }
 
+var userNinePreferences = {
+  gender: "female", 
+  distance: "10",
+  minAge: "23",
+  maxAge: "35",
+  mode: "visible",
+  searchMode:"friendship"
+}
 
 var userTwoPreferences = {
   gender: "female", 
@@ -757,6 +765,7 @@ module.exports = {
   userSixPreferences: userSixPreferences,
   userSevenPreferences: userSevenPreferences,
   userEightPreferences: userEightPreferences,
+  userNinePreferences: userNinePreferences,
   preferencesResponse: preferencesResponse,
   preferencesUpdated: preferencesUpdated,
   femaleUserAround: femaleUserAround,
