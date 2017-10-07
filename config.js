@@ -19,6 +19,7 @@ config.linksKey = 'links_';
 config.linkKey = 'link_';
 config.reportedUserKey = 'reported_user_';
 config.reportedKey = 'reported_';
+config.blockedKey = 'blocked_';
 config.shown = '_shown';
 config.bothKey = 'both';
 config.redisLib = redisLib;

@@ -102,7 +102,7 @@ var maleUserThree = {
   age: "24",
   picture: {
     data: {
-      url: "http://conceptodefinicion.de/wp-content/uploads/2015/03/hombre.jpg"
+      url: "https://modaellos.com/wp-content/uploads/2016/04/Cortes-de-Pelo-Otono-Invierno-2016-2017-Hombres-Maduros-famosos-patrick-dempsey.jpg"
     }
     },
   likes: {
@@ -645,7 +645,7 @@ var maleUserAroundThree = {
   
     id: "3",
     name: "Juan Perez" ,
-    picture: "http://conceptodefinicion.de/wp-content/uploads/2015/03/hombre.jpg",
+    picture: "https://modaellos.com/wp-content/uploads/2016/04/Cortes-de-Pelo-Otono-Invierno-2016-2017-Hombres-Maduros-famosos-patrick-dempsey.jpg",
     description: "",
     like: false
   

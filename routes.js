@@ -16,11 +16,11 @@ var LikesController			= require('./controllers/Likes');
 function create(router, config) {
 	this.config = config;
 	this.Around = AroundController.createAroundController(this.config);	
-	this.Users = UsersController.createUsersController(this.config);
+	this.Link = LinkController.createLinkController(this.config);
+	this.Users = UsersController.createUsersController(this.config, this.Around, this.Link);
 	this.Preferences = PreferencesController.createPreferencesController(this.config, this.Users, this.Around);
 	this.Location = LocationController.createLocationController(this.config);
 	this.Configuration = ConfigurationController.createConfigurationController(this.config);
-	this.Link = LinkController.createLinkController(this.config);
 	this.Likes = LikesController.createLikesController(this.config, this.Link);
 	// middleware to use for all requests
 	router.use(function(req, res, next) {
@@ -44,6 +44,7 @@ function create(router, config) {
 	router = createLikesRoutes(this.Likes, router);
 	router = createLinkRoutes(this.Link, router);
 	router = createReportedRoutes(this.Users, router);
+	router = createBlockedRoutes(this.Users, router);
 	return router;
 }
 
@@ -186,6 +187,58 @@ function createReportedRoutes(Users, router) {
 		.get(function(req,res) {
 			Users.getReportedUsers(function(err, response) {
 				console.log("response");
+				console.log(response);
+				if (err) {
+					return res.status(500).json({
+						statusCode: 500,
+						data: err
+					});
+				}
+				if (!response) {
+					return res.status(404).json({
+						statusCode: 404,
+						data: "Error"
+					});	
+				} else {
+			    	return res.status(200).json({
+						statusCode: 200,
+						data: response
+					});
+				}
+			});
+		})
+	return router;
+}
+
+
+function createBlockedRoutes(Users, router) {
+	router.route('/users/:user_id/block')
+		.post(function(req,res) {
+			Users.blockUser(req.params.user_id, req.body, function(err, response) {
+				if (err) {
+					return res.status(500).json({
+						statusCode: 500,
+						data: err
+					});
+				}
+				if (!response) {
+					return res.status(404).json({
+						statusCode: 404,
+						data: "Error"
+					});	
+				} else {
+			    	return res.status(200).json({
+						statusCode: 200,
+						data: response
+					});
+				}
+			});
+		})
+
+	router.route('/users/:user_id/block')
+		.get(function(req,res) {
+			Users.getBlockedUsers(req.params.user_id, function(err, response) {
+				console.log("response blocked");
 				console.log(response);
 				if (err) {
 					return res.status(500).json({

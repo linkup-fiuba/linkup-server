@@ -1,8 +1,10 @@
 'use strict';
 
-function Users(config) {
+function Users(config, Around, Link) {
 	this.config = config;
-	this.getUser = getUser,
+	this.Around = Around;
+	this.Link = Link;
+	this.getUser = getUser;
 	this.createUser = createUser;
 	this.updateUser = updateUser;
 	this.deleteUser = deleteUser;
@@ -11,10 +13,12 @@ function Users(config) {
 	this.getReportedUsers = getReportedUsers;
 	this.parseUserForElasticSearch = parseUserForElasticSearch;
 	this.getUsers = getUsers;
+	this.getBlockedUsers = getBlockedUsers;
+	this.blockUser = blockUser;
 }
 
-function createUsersController(config) {
-	return new Users(config);
+function createUsersController(config, Around, Link) {
+	return new Users(config, Around, Link);
 }
 
 function getUsers(callback) {
@@ -103,6 +107,7 @@ function createUser(userId, user, Preferences, callback) {
 							mode: 'visible',
 							searchMode: 'couple'
 						}
+						console.log(Preferences);
 						Preferences.createPreferences(userId, defaultPreferences, function (err, response) {
 							if (err) return callback(err, null);
 							var userModel = {
@@ -295,6 +300,69 @@ function getReportedUsers(callback) {
 	})
 }
 
+
+function blockUser(userId, userBody, callback) {
+	//chequear q no aparezca en los around, en links, 
+	var config = this.config;
+	var Around = this.Around;
+	var Link = this.Link;
+	if (userBody.userId == undefined) {
+		return callback(null, "Empty User Id");
+	} else {
+		config.redisLib.getHash(config.linkKey+userId+':'+userBody.userId, function (err, link)  {
+			if (link) {
+				config.redisLib.addToSet(config.blockedKey+userId, userBody.userId, function (err, response) {
+					if (err) return callback(err, null);
+					//delete from around
+					Around.deleteAroundUser(userId, userBody.userId, function (err, response) {
+						if (err) {
+							return callback(err, null);
+						}
+						if (response) {
+							//delete from links
+							Link.removeLink(userId, userBody.userId, function (err, response) {
+								if (err) {
+									return callback(err, null);
+								}
+								console.log(response);
+								return callback(null, response);
+							})
+						}
+					})
+					return callback(null, true);
+				})
+			} else {
+				console.log("NO HAY LINK");
+				return callback(null, "Users not linked");
+			}	
+		});
+	}
+}
+
+function getBlockedUsers(userId, callback) {
+	var config = this.config;
+	config.redisLib.getFromSet(config.blockedKey+userId, function(err, usersBlockedIds) {
+		var usersBlocked = [];
+		config.async.each(usersBlockedIds, function (id, callbackIt) {
+			config.redisLib.getHash(config.usersKey+id, function (err, user) {
+				var blockedUser = {
+					userId: id,
+					name: user.name,
+					description: user.description,
+					picture: user.picture
+				};
+				usersBlocked.push(blockedUser);
+				callbackIt();	
+			})
+
+		}, function finish(err) {
+			if (err) return callback(err, null);
+			return callback(null, usersBlocked);
+		});
+	})
+}
+
+
 function parseLikes(config, likes, callbackLikes) {
 	var likesParsed = [];
 	config.async.each(likes, function (like, callback) {
@@ -356,5 +424,7 @@ module.exports = {
 	reportUser: reportUser,
 	getReportedUsers: getReportedUsers,
 	parseUserForElasticSearch: parseUserForElasticSearch,
-	getUsers: getUsers
+	getUsers: getUsers,
+	blockUser: blockUser,
+	getBlockedUsers: getBlockedUsers
 }
