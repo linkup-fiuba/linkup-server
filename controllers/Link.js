@@ -33,7 +33,7 @@ function getLinks(userId, callback) {
 					};
 
 					links.push(linkObj);
-					callbackIt();					
+					return callbackIt();					
 				}
 			});
 		}, function finish(err) {
@@ -149,24 +149,17 @@ function blockLink(userId, userIdUnlinked, callback) {
 	//elimino el userIdUnlinked de likes_userId. 
 	// SI está hay un nuevo link. 
 	// SIno agregar en los around en campo like: true
-	config.redisLib.removeFromSet(config.linksKey+userId, userIdUnlinked, function (err, response) {
+	config.redisLib.removeFromSet(config.linksKey+userIdUnlinked, userId, function (err, response) {
 		if (err) return callback(err, null);
 		if (!response) {
 			return callback(null, false);
 		} else {
-			config.redisLib.removeFromSet(config.linksKey+userIdUnlinked, userId, function (err, response) {
+			config.redisLib.setHashField(config.linksKey+userId+':'+userIdUnlinked, 'block', true, function (err, response) {
 				if (err) return callback(err, null);
-				if (!response) {
-					return callback(null, false);
-				} else {
-					config.redisLib.setHashField(config.linksKey+userId+':'+userIdUnlinked, 'block', true, function (err, response) {
-						if (err) return callback(err, null);
-						config.redisLib.setHashField(config.linksKey+userIdUnlinked+':'+userId, 'block', true, function (err, response) {
-							if (err) return callback(err, null);
-							return callback(null, true);
-						});
-					});
-				}
+				config.redisLib.setHashField(config.linksKey+userIdUnlinked+':'+userId, 'block', true, function (err, response) {
+					if (err) return callback(err, null);
+					return callback(null, true);
+				});
 			});
 		}
 	})
@@ -177,29 +170,20 @@ function unblockLink(userId, userIdUnlinked, callback) {
 	//elimino el userIdUnlinked de likes_userId. 
 	// SI está hay un nuevo link. 
 	// SIno agregar en los around en campo like: true
-	config.redisLib.addToSet(config.linksKey+userId, userIdUnlinked, function (err, response) {
+	config.redisLib.addToSet(config.linksKey+userIdUnlinked, userId, function (err, response) {
 		if (err) return callback(err, null);
 		if (!response) {
 			return callback(null, false);
 		} else {
-			config.redisLib.addToSet(config.linksKey+userIdUnlinked, userId, function (err, response) {
+			config.redisLib.setHashField(config.linksKey+userId+':'+userIdUnlinked, 'block', false, function (err, response) {
 				if (err) return callback(err, null);
-				if (!response) {
-					return callback(null, false);
-				} else {
-					config.redisLib.setHashField(config.linksKey+userId+':'+userIdUnlinked, 'block', false, function (err, response) {
-						if (err) return callback(err, null);
-						config.redisLib.setHashField(config.linksKey+userIdUnlinked+':'+userId, 'block', false, function (err, response) {
-							if (err) return callback(err, null);
-							return callback(null, true);
-						});
-					});
-				}
+				config.redisLib.setHashField(config.linksKey+userIdUnlinked+':'+userId, 'block', false, function (err, response) {
+					if (err) return callback(err, null);
+					return callback(null, true);
+				});
 			});
-
-			
 		}
-	})
+	});
 } 
 
 module.exports = {
