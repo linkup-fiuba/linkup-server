@@ -186,8 +186,6 @@ function createReportedRoutes(Users, router) {
 	router.route('/reported')
 		.get(function(req,res) {
 			Users.getReportedUsers(function(err, response) {
-				console.log("response");
-				console.log(response);
 				if (err) {
 					return res.status(500).json({
 						statusCode: 500,
@@ -235,11 +233,32 @@ function createBlockedRoutes(Users, router) {
 			});
 		})
 
+	router.route('/users/:user_id/unblock')
+		.post(function(req,res) {
+			Users.unblockUser(req.params.user_id, req.body, function(err, response) {
+				if (err) {
+					return res.status(500).json({
+						statusCode: 500,
+						data: err
+					});
+				}
+				if (!response) {
+					return res.status(404).json({
+						statusCode: 404,
+						data: "Error"
+					});	
+				} else {
+			    	return res.status(200).json({
+						statusCode: 200,
+						data: response
+					});
+				}
+			});
+		})	
+
 	router.route('/users/:user_id/block')
 		.get(function(req,res) {
 			Users.getBlockedUsers(req.params.user_id, function(err, response) {
-				console.log("response blocked");
-				console.log(response);
 				if (err) {
 					return res.status(500).json({
 						statusCode: 500,

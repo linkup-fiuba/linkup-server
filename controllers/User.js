@@ -15,6 +15,7 @@ function Users(config, Around, Link) {
 	this.getUsers = getUsers;
 	this.getBlockedUsers = getBlockedUsers;
 	this.blockUser = blockUser;
+	this.unblockUser = unblockUser;
 }
 
 function createUsersController(config, Around, Link) {
@@ -107,7 +108,6 @@ function createUser(userId, user, Preferences, callback) {
 							mode: 'visible',
 							searchMode: 'couple'
 						}
-						console.log(Preferences);
 						Preferences.createPreferences(userId, defaultPreferences, function (err, response) {
 							if (err) return callback(err, null);
 							var userModel = {
@@ -268,7 +268,7 @@ function reportUser(userId, userBody, callback) {
 		}
 		config.redisLib.addToSet(config.reportedKey, userBody.userId, function (err, response) {
 			if (err) return callback(err, null);
-			config.redisLib.setHash(config.reportedUserKey+userBody.userId, reportedUser, function (err, response) {
+			config.redisLib.setHash(config.reportedUserKey+userBody.userId+':'+userId, reportedUser, function (err, response) {
 				if (err) return callback(err, null);
 				return callback(null, true);
 			})
@@ -277,21 +277,29 @@ function reportUser(userId, userBody, callback) {
 }
 
 function getReportedUsers(callback) {
-	console.log("WTF");
 	var config = this.config;
 	config.redisLib.getFromSet(config.reportedKey, function(err, usersReportedIds) {
 		var usersReported = [];
 		config.async.each(usersReportedIds, function (userId, callbackIt) {
-			config.redisLib.getHash(config.reportedUserKey+userId, function (err, user) {
-				var userReported = {
-					userIdReporter: user.userIdReporter,
-					userId: user.userId,
-					reason: user.reason
-				};
-				usersReported.push(userReported);
-				callbackIt();
+
+			config.redisLib.keys(config.reportedUserKey+userId+'*', function (err, keysUser) {
+			var users = [];
+			config.async.each(keysUser, function (key, cbIt) {
+				config.redisLib.getHash(key, function(err, response) {
+					if (err) return cbIt(err, null);
+					var userReported = {
+						userIdReporter: response.userIdReporter,
+						userId: response.userId,
+						reason: response.reason
+					};
+					usersReported.push(userReported);
+					return cbIt();
+				})
 				
-			})
+			}, function finish(err) {
+				return callbackIt();
+			});
+		})
 
 		}, function finish(err) {
 			if (err) return callback(err, null);
@@ -313,28 +321,55 @@ function blockUser(userId, userBody, callback) {
 			if (link) {
 				config.redisLib.addToSet(config.blockedKey+userId, userBody.userId, function (err, response) {
 					if (err) return callback(err, null);
-					//delete from around
-					Around.deleteAroundUser(userId, userBody.userId, function (err, response) {
+					//block in around
+					Around.blockAroundUser(userId, userBody.userId, function (err, response) {
 						if (err) {
 							return callback(err, null);
 						}
 						if (response) {
-							//delete from links
-							Link.removeLink(userId, userBody.userId, function (err, response) {
+							//block in links
+							Link.blockLink(userId, userBody.userId, function (err, response) {
 								if (err) {
 									return callback(err, null);
 								}
-								console.log(response);
-								return callback(null, response);
+								return callback(null, response);	
 							})
 						}
 					})
-					return callback(null, true);
 				})
 			} else {
 				console.log("NO HAY LINK");
 				return callback(null, "Users not linked");
 			}	
+		});
+	}
+}
+
+function unblockUser(userId, userBody, callback) {
+	//chequear q no aparezca en los around, en links, 
+	var config = this.config;
+	var Around = this.Around;
+	var Link = this.Link;
+	if (userBody.userId == undefined) {
+		return callback(null, "Empty User Id");
+	} else {
+		config.redisLib.removeFromSet(config.blockedKey+userId, userBody.userId, function (err, response) {
+			if (err) return callback(err, null);
+			//block in around
+			Around.unblockAroundUser(userId, userBody.userId, function (err, response) {
+				if (err) {
+					return callback(err, null);
+				}
+				if (response) {
+					//block in links
+					Link.unblockLink(userId, userBody.userId, function (err, response) {
+						if (err) {
+							return callback(err, null);
+						}
+						return callback(null, response);	
+					})
+				}
+			})
 		});
 	}
 }
@@ -426,5 +461,6 @@ module.exports = {
 	parseUserForElasticSearch: parseUserForElasticSearch,
 	getUsers: getUsers,
 	blockUser: blockUser,
-	getBlockedUsers: getBlockedUsers
+	getBlockedUsers: getBlockedUsers,
+	unblockUser: unblockUser
 }
