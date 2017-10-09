@@ -6,6 +6,8 @@ function Around(config) {
 	this.createAroundUser = createAroundUser;
 	this.deleteAroundUser = deleteAroundUser;
 	this.deleteAroundUsers = deleteAroundUsers;
+	this.blockAroundUser = blockAroundUser;
+	this.unblockAroundUser = unblockAroundUser;
 }
 
 function createAroundController(config) {
@@ -162,6 +164,25 @@ function createAroundUser(userId, userPreferences, callbackAround) {
 							}
 						});
 					},
+					function (user, otherUser, cb) {
+						//valido que no sea un usuario previamente bloqueado
+						config.redisLib.isMember(config.blockedKey+userId, userMatch.id, function (err, response) {
+							if (err) return cb(err, null);
+							if (response) {
+								return callbackIt();
+							} else {
+								config.redisLib.isMember(config.blockedKey+userMatch.id, userId, function (err, response) {
+									if (err) return cb(err, null);
+									if (response) {
+										return callbackIt();
+									} else {
+										
+										return cb(null, user, otherUser)
+									}
+								});
+							}
+						});
+					},
 				    function (user, otherUser, cb) {
 				    	//obtengo la preferencia del otro user
 				    	config.redisLib.getHashField(config.preferencesKey+userMatch.id, 'gender', function (err, userPref) {
@@ -186,7 +207,8 @@ function createAroundUser(userId, userPreferences, callbackAround) {
 							name: otherUser.name,
 							description: otherUser.description,
 							picture: otherUser.picture,
-							like: false
+							like: false,
+							block: false
 						};
 
 						//save info of around 
@@ -266,6 +288,76 @@ function deleteAroundUser(userId, userIdRemove, callbackDelete) {
 	    return callbackDelete(null, "OK");
 	});
 
+}
+
+function blockAroundUser(userId, userIdRemove, callback) {
+	var config = this.config;
+	config.async.waterfall([
+		function (cb) {
+			config.redisLib.setHashField(config.aroundKey+userId+':'+userIdRemove, 'block', true, function (err, response) {
+				if (err) return cb(err, null);
+				return cb(null);
+			});
+		},
+		function (cb) {
+			config.redisLib.setHashField(config.aroundKey+userIdRemove+':'+userId, 'block', true, function (err, response) {
+				if (err) return cb(err, null);
+				return cb(null);
+			});
+		},
+		function (cb) {
+			config.redisLib.removeFromSet(config.aroundKey+userId, userIdRemove, function (err, replySet) {
+				if (err) return cb(err, null);
+				return cb(null);
+			})
+		}, 
+		function (cb) {
+			config.redisLib.removeFromSet(config.aroundKey+userIdRemove, userId, function (err, replySet) {
+				if (err) return cb(err, null);
+				return cb(null);
+			})
+		}
+	], function (error) {
+	    if (error) {
+	    	return callback(error, null);
+	    }
+	    return callback(null, true);
+	});
+}
+
+function unblockAroundUser(userId, userIdRemove, callback) {
+	var config = this.config;
+	config.async.waterfall([
+		function (cb) {
+			config.redisLib.setHashField(config.aroundKey+userId+':'+userIdRemove, 'block', false, function (err, response) {
+				if (err) return cb(err, null);
+				return cb(null);
+			});
+		},
+		function (cb) {
+			config.redisLib.setHashField(config.aroundKey+userIdRemove+':'+userId, 'block', false, function (err, response) {
+				if (err) return cb(err, null);
+				return cb(null);
+			});
+		},
+		function (cb) {
+			config.redisLib.addToSet(config.aroundKey+userId, userIdRemove, function (err, replySet) {
+				if (err) return cb(err, null);
+				return cb(null);
+			})
+		},
+		function (cb) {
+			config.redisLib.addToSet(config.aroundKey+userIdRemove, userId, function (err, replySet) {
+				if (err) return cb(err, null);
+				return cb(null);
+			})
+		}
+	], function (error) {
+	    if (error) {
+	    	return callback(error, null);
+	    }
+	    return callback(null, true);
+	});
 }
 
 function deleteAroundUsers(userId, callbackDelete) {
@@ -355,17 +447,23 @@ function getUsersAround(config, userId, userIdsAround, userIdsAroundShown, cbUse
 					} else {
 						i++;
 						if (user != null) {
-							var userModel = {
-	        					id: id,
-								name: user.name,
-	        					picture: user.picture,
-								description: user.description,
-								like: user.like
-							};
-							users.push(userModel);
-							config.redisLib.addToSet(config.aroundKey+userId+config.shown, id, function(err, response) {
+							if (!user.block || user.block == "false" ) {
+								var userModel = {
+		        					id: id,
+									name: user.name,
+		        					picture: user.picture,
+									description: user.description,
+									like: user.like,
+									block: user.block
+								};
+								users.push(userModel);
+								config.redisLib.addToSet(config.aroundKey+userId+config.shown, id, function(err, response) {
+									return callbackIds();
+								})
+							} else {
+								console.log("usuario bloqueado: "+id);
 								return callbackIds();
-							})
+							}
 						} else {
 							return callbackIds();
 						}
@@ -395,5 +493,7 @@ module.exports = {
 	getAroundUsers: getAroundUsers,
 	deleteAroundUser: deleteAroundUser,
 	createAroundUser: createAroundUser,
-	deleteAroundUsers: deleteAroundUsers
+	deleteAroundUsers: deleteAroundUsers,
+	blockAroundUser: blockAroundUser,
+	unblockAroundUser: unblockAroundUser
 }

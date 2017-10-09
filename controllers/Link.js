@@ -6,6 +6,8 @@ function Link(config) {
 	this.getLinks = getLinks;
 	this.createLink = createLink;
 	this.removeLink = removeLink;
+	this.blockLink = blockLink;
+	this.unblockLink = unblockLink;
 }
 
 function createLinkController(config) {
@@ -23,7 +25,6 @@ function getLinks(userId, callback) {
 				if (!linkData) {
 					return callbackIt();
 				} else {
-					console.log(linkData);
 					var linkObj = {
 						id: linkData.id,
 						name: linkData.name,
@@ -32,7 +33,7 @@ function getLinks(userId, callback) {
 					};
 
 					links.push(linkObj);
-					callbackIt();					
+					return callbackIt();					
 				}
 			});
 		}, function finish(err) {
@@ -73,14 +74,16 @@ function createLink(userId, userIdLinked, callback) {
 						    				id: userIdLinked,
 						    				name: user.name,
 						    				dateOfLink: Date.now(),
-						    				picture: user.picture
+						    				picture: user.picture,
+						    				block: false
 						    			}
 
 						    			var myUserModel = {
 						    				id: userId,
 						    				name: myUser.name,
 						    				dateOfLink: Date.now(),
-						    				picture: myUser.picture
+						    				picture: myUser.picture,
+						    				block: false
 						    			}
 
 						    			//guargo la info del match
@@ -99,8 +102,6 @@ function createLink(userId, userIdLinked, callback) {
 					    			}
 					    		}
 					    	});
-
-			    			
 			    		}
 			    	});
 				}
@@ -142,9 +143,54 @@ function removeLink(userId, userIdUnlinked, callback) {
 	})
 }
 
+
+function blockLink(userId, userIdUnlinked, callback) {
+	var config = this.config;
+	//elimino el userIdUnlinked de likes_userId. 
+	// SI está hay un nuevo link. 
+	// SIno agregar en los around en campo like: true
+	config.redisLib.removeFromSet(config.linksKey+userIdUnlinked, userId, function (err, response) {
+		if (err) return callback(err, null);
+		if (!response) {
+			return callback(null, false);
+		} else {
+			config.redisLib.setHashField(config.linksKey+userId+':'+userIdUnlinked, 'block', true, function (err, response) {
+				if (err) return callback(err, null);
+				config.redisLib.setHashField(config.linksKey+userIdUnlinked+':'+userId, 'block', true, function (err, response) {
+					if (err) return callback(err, null);
+					return callback(null, true);
+				});
+			});
+		}
+	})
+}
+
+function unblockLink(userId, userIdUnlinked, callback) {
+	var config = this.config;
+	//elimino el userIdUnlinked de likes_userId. 
+	// SI está hay un nuevo link. 
+	// SIno agregar en los around en campo like: true
+	config.redisLib.addToSet(config.linksKey+userIdUnlinked, userId, function (err, response) {
+		if (err) return callback(err, null);
+		if (!response) {
+			return callback(null, false);
+		} else {
+			config.redisLib.setHashField(config.linksKey+userId+':'+userIdUnlinked, 'block', false, function (err, response) {
+				if (err) return callback(err, null);
+				config.redisLib.setHashField(config.linksKey+userIdUnlinked+':'+userId, 'block', false, function (err, response) {
+					if (err) return callback(err, null);
+					return callback(null, true);
+				});
+			});
+		}
+	});
+} 
+
 module.exports = {
 	createLinkController: createLinkController,
 	createLink: createLink,
 	getLinks: getLinks,
-	removeLink: removeLink
+	removeLink: removeLink,
+	blockLink: blockLink,
+	unblockLink: unblockLink
 }

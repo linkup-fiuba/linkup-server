@@ -74,7 +74,7 @@ config.async.waterfall([
 	    function (callback) {
 	    	Users.parseUser(objects.user, function (userParsed) {
 				if (userParsed) {
-					Users.createUser(userParsed.id, userParsed, function (err, response) {
+					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
 					console.log("========");
 						if (response) {
 							Location.updateLocation(userParsed.id, objects.locationOne, function (err, response) {
@@ -101,7 +101,7 @@ config.async.waterfall([
 	    function (callback) {
 	    	Users.parseUser(objects.maleUserTwo, function (userParsed) {
 				if (userParsed) {
-					Users.createUser(userParsed.id, userParsed, function (err, response) {
+					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
 					console.log("========");
 						if (response) {
 							Location.updateLocation(userParsed.id, objects.locationOne, function (err, response) {
@@ -129,7 +129,7 @@ config.async.waterfall([
 	    function (callback) {
 	    	Users.parseUser(objects.maleUserThree, function (userParsed) {
 				if (userParsed) {
-					Users.createUser(userParsed.id, userParsed, function (err, response) {
+					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
 					console.log("========");
 						if (response) {
 							Location.updateLocation(userParsed.id, objects.locationFour, function (err, response) {
@@ -156,8 +156,7 @@ config.async.waterfall([
 	    function (callback) {
 			Users.parseUser(objects.maleUserFour, function (userParsed) {
 				if (userParsed) {
-					Users.createUser(userParsed.id, userParsed, function (err, response) {
-					console.log("========");
+					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
 						if (response) {
 							Location.updateLocation(userParsed.id, objects.locationTwo, function (err, response) {
 								if (response) {
@@ -183,7 +182,7 @@ config.async.waterfall([
 	    function (callback) {
 	    	Users.parseUser(objects.femaleUser, function (userParsed) {
 				if (userParsed) {
-					Users.createUser(userParsed.id, userParsed, function (err, response) {
+					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
 					console.log("========");
 						if (response) {
 							Location.updateLocation(userParsed.id, objects.locationOne, function (err, response) {
@@ -210,7 +209,7 @@ config.async.waterfall([
 	    function (callback) {
 	    	Users.parseUser(objects.femaleUserTwo, function (userParsed) {
 				if (userParsed) {
-					Users.createUser(userParsed.id, userParsed, function (err, response) {
+					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
 					console.log("========");
 						if (response) {
 							Location.updateLocation(userParsed.id, objects.locationOne, function (err, response) {
@@ -237,7 +236,7 @@ config.async.waterfall([
 	    function (callback) {
 	    	Users.parseUser(objects.femaleUserThree, function (userParsed) {
 				if (userParsed) {
-					Users.createUser(userParsed.id, userParsed, function (err, response) {
+					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
 					console.log("========");
 						if (response) {
 							Location.updateLocation(userParsed.id, objects.locationOne, function (err, response) {
@@ -264,7 +263,7 @@ config.async.waterfall([
 	    function (callback) {
 	    	Users.parseUser(objects.femaleUserFour, function (userParsed) {
 				if (userParsed) {
-					Users.createUser(userParsed.id, userParsed, function (err, response) {
+					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
 					console.log("========");
 						if (response) {
 							Location.updateLocation(userParsed.id, objects.locationFour, function (err, response) {
@@ -291,7 +290,7 @@ config.async.waterfall([
 	    function (callback) {
 	    	Users.parseUser(objects.maleUserFive, function (userParsed) {
 				if (userParsed) {
-					Users.createUser(userParsed.id, userParsed, function (err, response) {
+					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
 					console.log("========");
 						if (response) {
 							Location.updateLocation(userParsed.id, objects.locationThree, function (err, response) {
@@ -318,7 +317,7 @@ config.async.waterfall([
 	    function (callback) {
 	    	Users.parseUser(objects.femaleUserFive, function (userParsed) {
 				if (userParsed) {
-					Users.createUser(userParsed.id, userParsed, function (err, response) {
+					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
 					console.log("========");
 						if (response) {
 							Location.updateLocation(userParsed.id, objects.locationThree, function (err, response) {

@@ -1,8 +1,10 @@
 'use strict';
 
-function Users(config) {
+function Users(config, Around, Link) {
 	this.config = config;
-	this.getUser = getUser,
+	this.Around = Around;
+	this.Link = Link;
+	this.getUser = getUser;
 	this.createUser = createUser;
 	this.updateUser = updateUser;
 	this.deleteUser = deleteUser;
@@ -11,10 +13,13 @@ function Users(config) {
 	this.getReportedUsers = getReportedUsers;
 	this.parseUserForElasticSearch = parseUserForElasticSearch;
 	this.getUsers = getUsers;
+	this.getBlockedUsers = getBlockedUsers;
+	this.blockUser = blockUser;
+	this.unblockUser = unblockUser;
 }
 
-function createUsersController(config) {
-	return new Users(config);
+function createUsersController(config, Around, Link) {
+	return new Users(config, Around, Link);
 }
 
 function getUsers(callback) {
@@ -263,7 +268,7 @@ function reportUser(userId, userBody, callback) {
 		}
 		config.redisLib.addToSet(config.reportedKey, userBody.userId, function (err, response) {
 			if (err) return callback(err, null);
-			config.redisLib.setHash(config.reportedUserKey+userBody.userId, reportedUser, function (err, response) {
+			config.redisLib.setHash(config.reportedUserKey+userBody.userId+':'+userId, reportedUser, function (err, response) {
 				if (err) return callback(err, null);
 				return callback(null, true);
 			})
@@ -272,21 +277,29 @@ function reportUser(userId, userBody, callback) {
 }
 
 function getReportedUsers(callback) {
-	console.log("WTF");
 	var config = this.config;
 	config.redisLib.getFromSet(config.reportedKey, function(err, usersReportedIds) {
 		var usersReported = [];
 		config.async.each(usersReportedIds, function (userId, callbackIt) {
-			config.redisLib.getHash(config.reportedUserKey+userId, function (err, user) {
-				var userReported = {
-					userIdReporter: user.userIdReporter,
-					userId: user.userId,
-					reason: user.reason
-				};
-				usersReported.push(userReported);
-				callbackIt();
+
+			config.redisLib.keys(config.reportedUserKey+userId+'*', function (err, keysUser) {
+			var users = [];
+			config.async.each(keysUser, function (key, cbIt) {
+				config.redisLib.getHash(key, function(err, response) {
+					if (err) return cbIt(err, null);
+					var userReported = {
+						userIdReporter: response.userIdReporter,
+						userId: response.userId,
+						reason: response.reason
+					};
+					usersReported.push(userReported);
+					return cbIt();
+				})
 				
-			})
+			}, function finish(err) {
+				return callbackIt();
+			});
+		})
 
 		}, function finish(err) {
 			if (err) return callback(err, null);
@@ -294,6 +307,96 @@ function getReportedUsers(callback) {
 		});
 	})
 }
+
+
+function blockUser(userId, userBody, callback) {
+	//chequear q no aparezca en los around, en links, 
+	var config = this.config;
+	var Around = this.Around;
+	var Link = this.Link;
+	if (userBody.userId == undefined) {
+		return callback(null, "Empty User Id");
+	} else {
+		config.redisLib.getHash(config.linkKey+userId+':'+userBody.userId, function (err, link)  {
+			if (link) {
+				config.redisLib.addToSet(config.blockedKey+userId, userBody.userId, function (err, response) {
+					if (err) return callback(err, null);
+					//block in around
+					Around.blockAroundUser(userId, userBody.userId, function (err, response) {
+						if (err) {
+							return callback(err, null);
+						}
+						if (response) {
+							//block in links
+							Link.blockLink(userId, userBody.userId, function (err, response) {
+								if (err) {
+									return callback(err, null);
+								}
+								return callback(null, response);	
+							})
+						}
+					})
+				})
+			} else {
+				console.log("NO HAY LINK");
+				return callback(null, "Users not linked");
+			}	
+		});
+	}
+}
+
+function unblockUser(userId, userBody, callback) {
+	//chequear q no aparezca en los around, en links, 
+	var config = this.config;
+	var Around = this.Around;
+	var Link = this.Link;
+	if (userBody.userId == undefined) {
+		return callback(null, "Empty User Id");
+	} else {
+		config.redisLib.removeFromSet(config.blockedKey+userId, userBody.userId, function (err, response) {
+			if (err) return callback(err, null);
+			//block in around
+			Around.unblockAroundUser(userId, userBody.userId, function (err, response) {
+				if (err) {
+					return callback(err, null);
+				}
+				if (response) {
+					//block in links
+					Link.unblockLink(userId, userBody.userId, function (err, response) {
+						if (err) {
+							return callback(err, null);
+						}
+						return callback(null, response);	
+					})
+				}
+			})
+		});
+	}
+}
+
+function getBlockedUsers(userId, callback) {
+	var config = this.config;
+	config.redisLib.getFromSet(config.blockedKey+userId, function(err, usersBlockedIds) {
+		var usersBlocked = [];
+		config.async.each(usersBlockedIds, function (id, callbackIt) {
+			config.redisLib.getHash(config.usersKey+id, function (err, user) {
+				var blockedUser = {
+					userId: id,
+					name: user.name,
+					description: user.description,
+					picture: user.picture
+				};
+				usersBlocked.push(blockedUser);
+				callbackIt();	
+			})
+
+		}, function finish(err) {
+			if (err) return callback(err, null);
+			return callback(null, usersBlocked);
+		});
+	})
+}
+
 
 function parseLikes(config, likes, callbackLikes) {
 	var likesParsed = [];
@@ -356,5 +459,8 @@ module.exports = {
 	reportUser: reportUser,
 	getReportedUsers: getReportedUsers,
 	parseUserForElasticSearch: parseUserForElasticSearch,
-	getUsers: getUsers
+	getUsers: getUsers,
+	blockUser: blockUser,
+	getBlockedUsers: getBlockedUsers,
+	unblockUser: unblockUser
 }
