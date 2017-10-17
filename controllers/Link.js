@@ -29,7 +29,8 @@ function getLinks(userId, callback) {
 						id: linkData.id,
 						name: linkData.name,
 						picture: linkData.picture,
-						dateOfLink: linkData.dateOfLink
+						dateOfLink: linkData.dateOfLink,
+						block: (linkData.block != undefined) ? linkData.block : false
 					};
 
 					links.push(linkObj);
