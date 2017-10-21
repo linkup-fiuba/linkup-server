@@ -111,7 +111,15 @@ function createAroundUser(userId, userPreferences, callbackAround) {
 	    					}
 	    				]
 	    			}
+	    		},
+	    		sort: {
+    				_geo_distance: {
+    					location: (user.location) ? JSON.parse(user.location) : defaultLocation,
+    					order: 'asc',
+    					unit: (distanceUnit ? distanceUnit : config.distanceUnitDefault)
+    				}
 	    		}
+	    		
 	    	}
 
 
@@ -129,6 +137,7 @@ function createAroundUser(userId, userPreferences, callbackAround) {
 	    function (user, userPreferences, usersMatched, callback) {
 	    	var usersMatch = [];
 			config.async.each(usersMatched, function (userMatch, cb) {
+				var distance = userMatch.sort[0];
 				userMatch = userMatch._source;
 				var match = {
 					id: userMatch.userId,
@@ -136,12 +145,15 @@ function createAroundUser(userId, userPreferences, callbackAround) {
 					age: userMatch.age,
 					gender: userMatch.gender,
 					mode: userMatch.mode,
-					searchMode: userMatch.searchMode
+					searchMode: userMatch.searchMode,
+					distance: distance
 				};
 
 				usersMatch.push(match);
 				cb();
 			}, function finish(err) {
+				console.log("USERS ES");
+				console.log(usersMatch);
 				if (err) {
 					return callback(err, null);
 				}
@@ -208,7 +220,8 @@ function createAroundUser(userId, userPreferences, callbackAround) {
 							description: otherUser.description,
 							picture: otherUser.picture,
 							like: false,
-							block: false
+							block: false,
+							distance: userMatch.distance
 						};
 
 						//save info of around 
@@ -454,7 +467,8 @@ function getUsersAround(config, userId, userIdsAround, userIdsAroundShown, cbUse
 		        					picture: user.picture,
 									description: user.description,
 									like: user.like,
-									block: user.block
+									block: user.block,
+									distance: user.distance
 								};
 								users.push(userModel);
 								config.redisLib.addToSet(config.aroundKey+userId+config.shown, id, function(err, response) {
@@ -471,6 +485,9 @@ function getUsersAround(config, userId, userIdsAround, userIdsAroundShown, cbUse
 				})
 
 			}, function finish(err) {
+				users = users.sort(compare);
+				console.log("DEBUG: USERS SORTED");
+				console.log(users);
 	    		return callback(null, users);
 			});
 	    	
@@ -482,6 +499,14 @@ function getUsersAround(config, userId, userIdsAround, userIdsAroundShown, cbUse
 	    return cbUserAround(null, users);
 	});
 
+}
+
+function compare(a,b) {
+  if (a.distance < b.distance)
+    return -1;
+  if (a.distance > b.distance)
+    return 1;
+  return 0;
 }
 
 Array.prototype.diff = function(a) {

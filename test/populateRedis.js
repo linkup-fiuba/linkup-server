@@ -99,12 +99,13 @@ config.async.waterfall([
 			})
 	    },
 	    function (callback) {
+	    	// Agustin Gimenez
 	    	Users.parseUser(objects.maleUserTwo, function (userParsed) {
 				if (userParsed) {
 					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
 					console.log("========");
 						if (response) {
-							Location.updateLocation(userParsed.id, objects.locationOne, function (err, response) {
+							Location.updateLocation(userParsed.id, objects.locationFar, function (err, response) {
 								if (response) {
 									Preferences.parsePreferences(userParsed.id, objects.userTwoPreferences, function (err, prefParsed) {
 										if (prefParsed) {
@@ -127,12 +128,13 @@ config.async.waterfall([
 
 	    },
 	    function (callback) {
+	    	// Juan Perez
 	    	Users.parseUser(objects.maleUserThree, function (userParsed) {
 				if (userParsed) {
 					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
 					console.log("========");
 						if (response) {
-							Location.updateLocation(userParsed.id, objects.locationFour, function (err, response) {
+							Location.updateLocation(userParsed.id, objects.locationFar, function (err, response) {
 								if (response) {
 									Preferences.parsePreferences(userParsed.id, objects.userThreePreferences, function (err, prefParsed) {
 										if (prefParsed) {
@@ -154,6 +156,7 @@ config.async.waterfall([
 			})
 	    },
 	    function (callback) {
+	    	// Arnaldo paredes
 			Users.parseUser(objects.maleUserFour, function (userParsed) {
 				if (userParsed) {
 					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
@@ -207,6 +210,7 @@ config.async.waterfall([
 			})
 	    },
 	    function (callback) {
+	    	// Mirtha Legrand
 	    	Users.parseUser(objects.femaleUserTwo, function (userParsed) {
 				if (userParsed) {
 					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
@@ -234,12 +238,13 @@ config.async.waterfall([
 			})
 	    },
 	    function (callback) {
+	    	// Josefina Couto
 	    	Users.parseUser(objects.femaleUserThree, function (userParsed) {
 				if (userParsed) {
 					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
 					console.log("========");
 						if (response) {
-							Location.updateLocation(userParsed.id, objects.locationOne, function (err, response) {
+							Location.updateLocation(userParsed.id, objects.locationNear, function (err, response) {
 								if (response) {
 									Preferences.parsePreferences(userParsed.id, objects.userSixPreferences, function (err, prefParsed) {
 										if (prefParsed) {
@@ -261,6 +266,7 @@ config.async.waterfall([
 			})
 	    },
 	    function (callback) {
+	    	//Andrea Rincon
 	    	Users.parseUser(objects.femaleUserFour, function (userParsed) {
 				if (userParsed) {
 					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
@@ -288,12 +294,13 @@ config.async.waterfall([
 			})
 	    },
 	    function (callback) {
+	    	//Agustin Zunino 
 	    	Users.parseUser(objects.maleUserFive, function (userParsed) {
 				if (userParsed) {
 					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
 					console.log("========");
 						if (response) {
-							Location.updateLocation(userParsed.id, objects.locationThree, function (err, response) {
+							Location.updateLocation(userParsed.id, objects.locationNear, function (err, response) {
 								if (response) {
 									Preferences.parsePreferences(userParsed.id, objects.userMaleFivePreferences, function (err, prefParsed) {
 										if (prefParsed) {
@@ -315,6 +322,7 @@ config.async.waterfall([
 			})
 	    },
 	    function (callback) {
+	    	// Mercedes Revora
 	    	Users.parseUser(objects.femaleUserFive, function (userParsed) {
 				if (userParsed) {
 					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
@@ -340,7 +348,67 @@ config.async.waterfall([
 					console.log("ERROR PARSED");
 				}
 			})
+	    },
+	    function (callback) {
+	    	// Delfina Loiza
+	    	Users.parseUser(objects.femaleUserSix, function (userParsed) {
+				if (userParsed) {
+					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
+					console.log("========");
+						if (response) {
+							Location.updateLocation(userParsed.id, objects.locationFarFar, function (err, response) {
+								if (response) {
+									Preferences.parsePreferences(userParsed.id, objects.userFemaleSixPreferences, function (err, prefParsed) {
+										if (prefParsed) {
+											Preferences.createPreferences(userParsed.id, prefParsed, function (err, response) {
+												console.log("user created");	
+												callback(null);
+											})
+										}
+									})
+								}
+							})
+						}  else {
+							console.log("NEXT");
+							return callback(null);
+						}
+					})
+				} else {
+					console.log("ERROR PARSED");
+				}
+			})
+	    },
+	    function (callback) {
+    		console.log("G");
+	    	// Carla Napolitano
+	    	Users.parseUser(objects.femaleUserSeven, function (userParsed) {
+				if (userParsed) {
+					console.log(userParsed);
+					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
+					console.log("========");
+						if (response) {
+							Location.updateLocation(userParsed.id, objects.locationMedium, function (err, response) {
+								if (response) {
+									Preferences.parsePreferences(userParsed.id, objects.userFemaleSevenPreferences, function (err, prefParsed) {
+										if (prefParsed) {
+											Preferences.createPreferences(userParsed.id, prefParsed, function (err, response) {
+												console.log("user created");	
+												callback(null);
+											})
+										}
+									})
+								}
+							})
+						}  else {
+							return callback(null);
+						}
+					})
+				} else {
+					console.log("ERROR PARSED");
+				}
+			})
 	    }
+	    
 	], function (error) {
 	    if (error) {
 	    	return console.log(error);

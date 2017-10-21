@@ -50,7 +50,7 @@ var user = {
 var maleUserTwo = {
   id: "2",
   name: "Agustin Gimenez",
-  birthday: "08/19/1993",
+  birthday: "08/19/1989",
   age: "24",
   picture: {
     data: {
@@ -382,7 +382,7 @@ var femaleUserFour = {
 var femaleUserFive = {
   id: "9",
   name: "Mercedes Revora",
-  birthday: "08/19/1993",
+  birthday: "02/04/1963",
   age: "24",
   picture: {
     data: {
@@ -406,6 +406,74 @@ var femaleUserFive = {
     {
       school: {
         name: "Colegio Nuestra Señora de la Misericordia"
+      },
+      type: "High School"
+    }
+  ]
+};
+
+
+var femaleUserSix = {
+  id: "10",
+  name: "Delfina Loiza",
+  birthday: "10/12/1993",
+  age: "24",
+  picture: {
+    data: {
+      url: "http://www.clinicafisioalicanteperezlloret.es/image/cache/data/category_2/vestido-corto-boho-de-verano-bohemio-sentir-ropa-de-playa-mujer-7j9onak89n--1095-500x500_0.jpg"
+    }
+  },
+  likes: {
+    data: 
+    [
+      {
+        name: "Canal 13"
+      },
+      {
+        name: "Famosos"
+      }
+    ]
+  },
+  gender: "female",
+  education: 
+  [
+    {
+      school: {
+        name: "Colegio Nuestra Señora de la Misericordia"
+      },
+      type: "High School"
+    }
+  ]
+};
+
+
+var femaleUserSeven = {
+  id: "11",
+  name: "Carla Napolitano",
+  birthday: "10/31/1991",
+  age: "26",
+  picture: {
+    data: {
+      url: "https://img.buzzfeed.com/buzzfeed-static/static/2015-10/23/13/enhanced/webdr01/original-15681-1445619655-1.jpg?downsize=715:*&output-format=auto&output-quality=auto"
+    }
+  },
+  likes: {
+    data: 
+    [
+      {
+        name: "La Garganta Poderoza"
+      },
+      {
+        name: "Musicoterapia"
+      }
+    ]
+  },
+  gender: "female",
+  education: 
+  [
+    {
+      school: {
+        name: "Colegio San Francisco"
       },
       type: "High School"
     }
@@ -583,6 +651,26 @@ var userNinePreferences = {
   searchMode:"friendship"
 }
 
+var userFemaleSixPreferences = {
+  gender: "female", 
+  distance: "10",
+  minAge: "23",
+  maxAge: "35",
+  mode: "visible",
+  searchMode:"friendship"
+
+}
+
+var userFemaleSevenPreferences = {
+  gender: "male", 
+  distance: "15",
+  minAge: "23",
+  maxAge: "35",
+  mode: "visible",
+  searchMode:"couple"
+
+}
+
 var userTwoPreferences = {
   gender: "female", 
   distance: "15",
@@ -731,6 +819,21 @@ var locationFour = {
   lon: -58.47
 }
 
+var locationNear = {
+  lat: -34.59,
+  lon: -58.43
+}
+
+var locationMedium = {
+  lat: -34.57,
+  lon: -58.44
+}
+
+var locationFar = {
+  lat:-34.55,
+  lon: -58.48
+}
+
 var locationUpdated = {
   lat: "-15.05",
   lon: "-59.29"
@@ -739,6 +842,11 @@ var locationUpdated = {
 var locationNotFound = {
     lat: "-34.32",
     lon: "-60.34"
+}
+
+var locationFarFar = {
+  lat: -34.67, 
+  lon: -59.40
 }
 
 module.exports = {
@@ -752,6 +860,7 @@ module.exports = {
   femaleUserThree: femaleUserThree,
   femaleUserFour: femaleUserFour,
   femaleUserFive: femaleUserFive,
+  femaleUserSix: femaleUserSix,
   userResponse: userResponse,
   userUpdatedResponse: userUpdatedResponse,
   invisiblePreferences: invisiblePreferences,
@@ -763,6 +872,8 @@ module.exports = {
   userMaleFivePreferences: userMaleFivePreferences,
   userFivePreferences: userFivePreferences,
   userSixPreferences: userSixPreferences,
+  userFemaleSevenPreferences: userFemaleSevenPreferences,
+  userFemaleSixPreferences: userFemaleSixPreferences,
   userSevenPreferences: userSevenPreferences,
   userEightPreferences: userEightPreferences,
   userNinePreferences: userNinePreferences,
@@ -782,5 +893,10 @@ module.exports = {
   locationThree: locationThree,
   locationUpdated: locationUpdated,
   locationFour: locationFour,
-  locationNotFound: locationNotFound
+  locationNotFound: locationNotFound,
+  locationNear: locationNear,
+  locationMedium: locationMedium,
+  locationFar: locationFar,
+  locationFarFar: locationFarFar,
+  femaleUserSeven: femaleUserSeven
 }
