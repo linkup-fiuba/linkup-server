@@ -44,6 +44,8 @@ function create(router, config) {
 	router = createLikesRoutes(this.Likes, router);
 	router = createLinkRoutes(this.Link, router);
 	router = createReportedRoutes(this.Users, router);
+	router = createBlockedRoutes(this.Users, router);
+	//router = createUserDisabled(this.Users, router);
 	return router;
 }
 
@@ -263,17 +265,6 @@ function createReportedRoutes(Users, router) {
 
 function createUserDisabled(Users, router) {
 	router.route('/users/:user_id/disable')
-		.post(function (req, res) {
-			//disable user
-		})
-	router.route('/users/:user_id/enable')
-		.post(function (req, res) {
-			//enable user
-		})
-}
-
-function createUserReportedManager(Users, router) {
-	router.route('/users/')
 		.post(function (req, res) {
 			//disable user
 		})
@@ -584,6 +575,80 @@ function createLinkRoutes(Link, router) {
 		});
 	return router;
 }
+
+
+function createBlockedRoutes(Users, router) {
+	router.route('/users/:user_id/block')
+		.post(function(req,res) {
+			Users.blockUser(req.params.user_id, req.body, function(err, response) {
+				if (err) {
+					return res.status(500).json({
+						statusCode: 500,
+						data: err
+					});
+				}
+				if (!response) {
+					return res.status(404).json({
+						statusCode: 404,
+						data: "Error"
+					});	
+				} else {
+			    	return res.status(200).json({
+						statusCode: 200,
+						data: response
+					});
+				}
+			});
+		})
+
+	router.route('/users/:user_id/unblock')
+		.post(function(req,res) {
+			Users.unblockUser(req.params.user_id, req.body, function(err, response) {
+				if (err) {
+					return res.status(500).json({
+						statusCode: 500,
+						data: err
+					});
+				}
+				if (!response) {
+					return res.status(404).json({
+						statusCode: 404,
+						data: "Error"
+					});	
+				} else {
+			    	return res.status(200).json({
+						statusCode: 200,
+						data: response
+					});
+				}
+			});
+		})	
+
+	router.route('/users/:user_id/block')
+		.get(function(req,res) {
+			Users.getBlockedUsers(req.params.user_id, function(err, response) {
+				if (err) {
+					return res.status(500).json({
+						statusCode: 500,
+						data: err
+					});
+				}
+				if (!response) {
+					return res.status(404).json({
+						statusCode: 404,
+						data: "Error"
+					});	
+				} else {
+			    	return res.status(200).json({
+						statusCode: 200,
+						data: response
+					});
+				}
+			});
+		})
+	return router;
+}
+
 
 module.exports = {
 	create: create
