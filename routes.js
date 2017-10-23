@@ -16,11 +16,11 @@ var LikesController			= require('./controllers/Likes');
 function create(router, config) {
 	this.config = config;
 	this.Around = AroundController.createAroundController(this.config);	
-	this.Link = LinkController.createLinkController(this.config);
-	this.Users = UsersController.createUsersController(this.config, this.Around, this.Link);
+	this.Users = UsersController.createUsersController(this.config);
 	this.Preferences = PreferencesController.createPreferencesController(this.config, this.Users, this.Around);
 	this.Location = LocationController.createLocationController(this.config);
 	this.Configuration = ConfigurationController.createConfigurationController(this.config);
+	this.Link = LinkController.createLinkController(this.config);
 	this.Likes = LikesController.createLikesController(this.config, this.Link);
 	// middleware to use for all requests
 	router.use(function(req, res, next) {
@@ -44,7 +44,6 @@ function create(router, config) {
 	router = createLikesRoutes(this.Likes, router);
 	router = createLinkRoutes(this.Link, router);
 	router = createReportedRoutes(this.Users, router);
-	router = createBlockedRoutes(this.Users, router);
 	return router;
 }
 
@@ -159,6 +158,13 @@ function createUserRoutes(Users, Preferences, router) {
 	return router;
 }
 
+/**
+Reportar un usuario POST /users/:user_id/report {userIdReporter, reason}
+Eliminar reportes de un usuario DELETE /users/:user_id/report
+Eliminar un reporte especifico de un usuario DELETE /users/:user_id/report/:user_id_reporter
+Obtener todos los reportes de un usuario GET /users/:user_id/report
+Obtener todos los usuarios reportados GET /reported
+**/
 function createReportedRoutes(Users, router) {
 	router.route('/users/:user_id/report')
 		.post(function(req,res) {
@@ -182,10 +188,56 @@ function createReportedRoutes(Users, router) {
 				}
 			});
 		})
+		.delete(function(req, res) {
+			// delete all reports of user :user_id
+			Users.deleteReports(req.params.user_id, function (err, response) {
+				if (err) {
+					return res.status(500).json({
+						statusCode: 500,
+						data: err
+					});
+				}
+				if (!response) {
+					return res.status(404).json({
+						statusCode: 404,
+						data: "Error"
+					});	
+				} else {
+			    	return res.status(200).json({
+						statusCode: 200,
+						data: response
+					});
+				}
+			});
+		})
+		.get(function (req, res) {
+			Users.getReports(req.params.user_id, function(err, response) {
+				if (err) {
+					return res.status(500).json({
+						statusCode: 500,
+						data: err
+					});
+				}
+				if (!response) {
+					return res.status(404).json({
+						statusCode: 404,
+						data: "Error"
+					});	
+				} else {
+			    	return res.status(200).json({
+						statusCode: 200,
+						data: response
+					});
+				}
+			});
+		})
+
 
 	router.route('/reported')
 		.get(function(req,res) {
 			Users.getReportedUsers(function(err, response) {
+				console.log("response");
+				console.log(response);
 				if (err) {
 					return res.status(500).json({
 						statusCode: 500,
@@ -209,77 +261,29 @@ function createReportedRoutes(Users, router) {
 }
 
 
-function createBlockedRoutes(Users, router) {
-	router.route('/users/:user_id/block')
-		.post(function(req,res) {
-			Users.blockUser(req.params.user_id, req.body, function(err, response) {
-				if (err) {
-					return res.status(500).json({
-						statusCode: 500,
-						data: err
-					});
-				}
-				if (!response) {
-					return res.status(404).json({
-						statusCode: 404,
-						data: "Error"
-					});	
-				} else {
-			    	return res.status(200).json({
-						statusCode: 200,
-						data: response
-					});
-				}
-			});
+function createUserDisabled(Users, router) {
+	router.route('/users/:user_id/disable')
+		.post(function (req, res) {
+			//disable user
 		})
-
-	router.route('/users/:user_id/unblock')
-		.post(function(req,res) {
-			Users.unblockUser(req.params.user_id, req.body, function(err, response) {
-				if (err) {
-					return res.status(500).json({
-						statusCode: 500,
-						data: err
-					});
-				}
-				if (!response) {
-					return res.status(404).json({
-						statusCode: 404,
-						data: "Error"
-					});	
-				} else {
-			    	return res.status(200).json({
-						statusCode: 200,
-						data: response
-					});
-				}
-			});
-		})	
-
-	router.route('/users/:user_id/block')
-		.get(function(req,res) {
-			Users.getBlockedUsers(req.params.user_id, function(err, response) {
-				if (err) {
-					return res.status(500).json({
-						statusCode: 500,
-						data: err
-					});
-				}
-				if (!response) {
-					return res.status(404).json({
-						statusCode: 404,
-						data: "Error"
-					});	
-				} else {
-			    	return res.status(200).json({
-						statusCode: 200,
-						data: response
-					});
-				}
-			});
+	router.route('/users/:user_id/enable')
+		.post(function (req, res) {
+			//enable user
 		})
-	return router;
 }
+
+function createUserReportedManager(Users, router) {
+	router.route('/users/')
+		.post(function (req, res) {
+			//disable user
+		})
+	router.route('/users/:user_id/enable')
+		.post(function (req, res) {
+			//enable user
+		})
+}
+
+
 
 function createUserPreferencesRoutes(Preferences, router) {
 	router.route('/users/:user_id/preferences')
