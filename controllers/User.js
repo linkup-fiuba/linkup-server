@@ -10,6 +10,8 @@ function Users(config, Around, Link) {
 	this.deleteUser = deleteUser;
 	this.parseUser = parseUser;
 	this.reportUser = reportUser;
+	this.deleteReports = deleteReports;
+	this.getReports = getReports;
 	this.getReportedUsers = getReportedUsers;
 	this.parseUserForElasticSearch = parseUserForElasticSearch;
 	this.getUsers = getUsers;
@@ -258,22 +260,68 @@ function parseUser(facebookUser, callbackUser) {
 
 function reportUser(userId, userBody, callback) {
 	var config = this.config;
-	if (userBody.userId == undefined) {
+	if (userBody.userIdReporter == undefined) {
 		return callback(null, "Empty User Id");
 	} else {
 		var reportedUser = {
-			userIdReporter: userId,
-			userId: userBody.userId,
+			userIdReporter: userBody.userIdReporter,
+			userId: userId,
 			reason: (userBody.reason != undefined) ? userBody.reason : ""
 		}
-		config.redisLib.addToSet(config.reportedKey, userBody.userId, function (err, response) {
+		config.redisLib.addToSet(config.reportedKey, userId, function (err, response) {
 			if (err) return callback(err, null);
-			config.redisLib.setHash(config.reportedUserKey+userBody.userId+':'+userId, reportedUser, function (err, response) {
+			config.redisLib.setHash(config.reportedUserKey+userId+':'+userBody.userIdReporter, reportedUser, function (err, response) {
 				if (err) return callback(err, null);
 				return callback(null, true);
 			})
 		})
 	}
+}
+
+function deleteReports(userId, callback) {
+	var config = this.config;
+	config.redisLib.removeFromSet(config.reportedKey, userId, function (err, response) {
+		if (err) return callback(err, null);
+		config.redisLib.keys(config.reportedUserKey+userId+'*', function (err, keysUser) {
+			config.async.each(keysUser, function (key, cbIt) {
+				config.redisLib.deleteKey(key, function(err, response) {
+					if (err) return cbIt(err, null);
+					return cbIt();
+				})
+			}, function finish(err) {
+				if (err) return callback(err, null);
+				return callback(null, true);
+			});
+		})
+	})
+
+}
+
+function getReports(userId, callback) {
+	var config = this.config;
+	config.redisLib.keys(config.reportedUserKey+userId+'*', function (err, keysUser) {
+		if (err) return callback(err, null);
+		var reports = [];
+		config.async.each(keysUser, function (key, cbIt) {
+			config.redisLib.getHash(key, function(err, response) {
+				if (err) return cbIt(err, null);
+				var userReported = {
+					userIdReporter: response.userIdReporter,
+					userId: response.userId,
+					reason: response.reason
+				};
+				reports.push(userReported);
+				return cbIt();
+			})
+			
+		}, function finish(err) {
+			console.log(reports);
+			console.log(callback);
+			if (err) return callback(err, null);
+			return callback(null, reports);
+		});
+	})	
+
 }
 
 function getReportedUsers(callback) {
@@ -283,23 +331,23 @@ function getReportedUsers(callback) {
 		config.async.each(usersReportedIds, function (userId, callbackIt) {
 
 			config.redisLib.keys(config.reportedUserKey+userId+'*', function (err, keysUser) {
-			var users = [];
-			config.async.each(keysUser, function (key, cbIt) {
-				config.redisLib.getHash(key, function(err, response) {
-					if (err) return cbIt(err, null);
-					var userReported = {
-						userIdReporter: response.userIdReporter,
-						userId: response.userId,
-						reason: response.reason
-					};
-					usersReported.push(userReported);
-					return cbIt();
-				})
-				
-			}, function finish(err) {
-				return callbackIt();
-			});
-		})
+				var users = [];
+				config.async.each(keysUser, function (key, cbIt) {
+					config.redisLib.getHash(key, function(err, response) {
+						if (err) return cbIt(err, null);
+						var userReported = {
+							userIdReporter: response.userIdReporter,
+							userId: response.userId,
+							reason: response.reason
+						};
+						usersReported.push(userReported);
+						return cbIt();
+					})
+					
+				}, function finish(err) {
+					return callbackIt();
+				});
+			})
 
 		}, function finish(err) {
 			if (err) return callback(err, null);
@@ -457,6 +505,8 @@ module.exports = {
 	deleteUser: deleteUser,
 	parseUser: parseUser,
 	reportUser: reportUser,
+	deleteReports: deleteReports,
+	getReports: getReports,
 	getReportedUsers: getReportedUsers,
 	parseUserForElasticSearch: parseUserForElasticSearch,
 	getUsers: getUsers,
