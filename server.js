@@ -116,10 +116,10 @@ if(cluster.isMaster) {
 		}
 	})
 	
-	app.use(express.static(path.join(__dirname,'/WebApp')));
+	app.use(express.static(path.join(__dirname,'../link-up-admin/build')));
 
 	app.get('/', function(req, res) { 
-	    res.sendFile('WebApp/index.html'); 
+	    res.sendFile('../link-up-admin/build/index.html'); 
 	});
 	
 
