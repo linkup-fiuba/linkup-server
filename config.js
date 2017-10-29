@@ -1,6 +1,7 @@
 var redisLib 			= require('./redisLib');
 var elasticSearchLib 	= require('./elasticSearchLib');
 var async 				= require('async');
+const uuidv1 = require('uuid/v1');
 
 var config = {};
 
@@ -24,6 +25,12 @@ config.shown = '_shown';
 config.bothKey = 'both';
 config.redisLib = redisLib;
 config.async = async.default;
+config.uuidv1 = uuidv1;
+config.reportOptions = [
+	"Mensajes inapropiados",
+    "Comportamiento extraño",
+	"Spam"
+]
 
 module.exports = config;
 

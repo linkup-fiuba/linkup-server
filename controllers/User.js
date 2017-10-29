@@ -10,6 +10,8 @@ function Users(config, Around, Link) {
 	this.deleteUser = deleteUser;
 	this.parseUser = parseUser;
 	this.reportUser = reportUser;
+	this.getReport = getReport;
+	this.deleteReport = deleteReport;
 	this.deleteReports = deleteReports;
 	this.getReports = getReports;
 	this.getReportedUsers = getReportedUsers;
@@ -268,19 +270,78 @@ function reportUser(userId, userBody, callback) {
 	if (userBody.userIdReporter == undefined) {
 		return callback(null, "Empty User Id");
 	} else {
-		var reportedUser = {
-			userIdReporter: userBody.userIdReporter,
-			userId: userId,
-			reason: (userBody.reason != undefined) ? userBody.reason : ""
+		if (config.reportOptions.contains(userBody.reason)) {
+			var reportedUser = {
+				id: config.uuidv1(),
+				date: Date.now(),
+				userIdReporter: userBody.userIdReporter,
+				userId: userId,
+				type: userBody.reason,
+				reason: (userBody.reason != undefined) ? userBody.reason : "default"
+			}			
+		} else {
+			var reportedUser = {
+				id: config.uuidv1(),
+				date: Date.now(),
+				userIdReporter: userBody.userIdReporter,
+				userId: userId,
+				type: "Otro",
+				reason: (userBody.reason != undefined) ? userBody.reason : "default"
+			}
 		}
+
 		config.redisLib.addToSet(config.reportedKey, userId, function (err, response) {
 			if (err) return callback(err, null);
-			config.redisLib.setHash(config.reportedUserKey+userId+':'+userBody.userIdReporter, reportedUser, function (err, response) {
+			config.redisLib.keys(config.reportedUserKey+userId+':'+userBody.userIdReporter+'*', function (err, response) {
+				if (!response || response.length == 0) {
+					config.redisLib.setHash(config.reportedUserKey+userId+':'+userBody.userIdReporter+'_'+reportedUser.id, reportedUser, function (err, response) {
+						if (err) return callback(err, null);
+						return callback(null, reportedUser);
+					})
+				} else {
+					return callback(null, "El usuario ya fue reportado");
+				}
+			} )
+
+		})
+	}
+}
+
+function getReport(reportId, callback) {
+	var config = this.config;
+	config.redisLib.keys(config.reportedUserKey+'*'+reportId, function (err, response) {
+		if (!response || response.length == 0) {
+			return callback(null, []);
+		} else {
+			config.redisLib.getHash(response[0], function(err, reportResponse) {
+				if (err) return callback(err, null);
+				var report = {
+					id: reportResponse.id,
+					date: reportResponse.date,
+					userIdReporter: reportResponse.userIdReporter,
+					userId: reportResponse.userId,
+					type: reportResponse.type,
+					reason: reportResponse.reason
+				};
+				return callback(null, report);
+			})
+		}
+	} )
+
+}
+
+function deleteReport(reportId, callback) {
+	var config = this.config;
+	config.redisLib.keys(config.reportedUserKey+'*'+reportId, function (err, response) {
+		if (!response || response.length == 0) {
+			return callback(null, []);
+		} else {
+			config.redisLib.deleteKey(response[0], function(err, reportResponse) {
 				if (err) return callback(err, null);
 				return callback(null, true);
 			})
-		})
-	}
+		}
+	} )
 }
 
 function deleteReports(config, userId, callback) {
@@ -310,8 +371,11 @@ function getReports(userId, callback) {
 			config.redisLib.getHash(key, function(err, response) {
 				if (err) return cbIt(err, null);
 				var userReported = {
+					id: response.id,
+					date: response.date,
 					userIdReporter: response.userIdReporter,
 					userId: response.userId,
+					type: response.type,
 					reason: response.reason
 				};
 				reports.push(userReported);
@@ -338,8 +402,11 @@ function getReportedUsers(callback) {
 					config.redisLib.getHash(key, function(err, response) {
 						if (err) return cbIt(err, null);
 						var userReported = {
+							id: response.id,
+							date: response.date,
 							userIdReporter: response.userIdReporter,
 							userId: response.userId,
+							type: response.type,
 							reason: response.reason
 						};
 						usersReported.push(userReported);
@@ -595,6 +662,11 @@ function enableUser(userId, callback) {
 	
 }
 
+
+Array.prototype.contains = function(element){
+    return this.indexOf(element) > -1;
+};
+
 module.exports = {
 	createUsersController: createUsersController,
 	getUser: getUser,
@@ -603,6 +675,8 @@ module.exports = {
 	deleteUser: deleteUser,
 	parseUser: parseUser,
 	reportUser: reportUser,
+	getReport: getReport,
+	deleteReport: deleteReport,
 	deleteReports: deleteReports,
 	getReports: getReports,
 	getReportedUsers: getReportedUsers,
