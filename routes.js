@@ -235,11 +235,55 @@ function createReportedRoutes(Users, config, router) {
 		})
 
 
-	router.route('/reported')
+	router.route('/reports')
 		.get(function(req,res) {
 			Users.getReportedUsers(function(err, response) {
-				console.log("response");
-				console.log(response);
+				if (err) {
+					return res.status(500).json({
+						statusCode: 500,
+						data: err
+					});
+				}
+				if (!response) {
+					return res.status(404).json({
+						statusCode: 404,
+						data: "Error"
+					});	
+				} else {
+					var items = response.length;
+					var header = '0-'+(items-1)+'/'+items;
+					res.setHeader('Content-Range', 'items '+header);
+			    	return res.status(200).json({
+						statusCode: 200,
+						data: response
+					});
+				}
+			});
+		})
+	router.route('/reports/:report_id')
+		.get(function(req,res) {
+			Users.getReport(req.params.report_id, function(err, response) {
+				if (err) {
+					return res.status(500).json({
+						statusCode: 500,
+						data: err
+					});
+				}
+				if (!response) {
+					return res.status(404).json({
+						statusCode: 404,
+						data: "Error"
+					});	
+				} else {
+			    	return res.status(200).json({
+						statusCode: 200,
+						data: response
+					});
+				}
+			});
+		})
+		.delete(function(req,res) {
+			Users.deleteReport(req.params.report_id, function(err, response) {
 				if (err) {
 					return res.status(500).json({
 						statusCode: 500,
