@@ -8,6 +8,8 @@ var bodyParser 		= require('body-parser');
 var async 			= require('async');
 var cluster 		= require('cluster');
 
+var path			= require("path");
+
 var config 			= require('./config');
 
 var Routes 			= require('./routes');
@@ -113,7 +115,12 @@ if(cluster.isMaster) {
 			});
 		}
 	})
-		
+	
+	app.use(express.static(path.join(__dirname,'../link-up-admin/build')));
+
+	app.get('/', function(req, res) { 
+	    res.sendFile('../link-up-admin/build/index.html'); 
+	});
 	
 
 	// START THE SERVER

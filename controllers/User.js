@@ -205,8 +205,9 @@ function deleteUser(userId, callbackDelete) {
 } 
 
 function updateFieldUser(config, user, userUpdate, cbUpdate) {
+	console.log(userUpdate);
 	config.async.forEach(Object.keys(userUpdate), function (userField, callback){ 
-	    if (userUpdate[userField] instanceof Array) {
+	    if (userUpdate[userField] instanceof Array || userUpdate[userField] instanceof Object) {
 	    	userUpdate[userField] = JSON.stringify(userUpdate[userField]);
 	    }
 	    config.redisLib.setHashField(config.usersKey+user.id,userField,userUpdate[userField], function (err, response) {
