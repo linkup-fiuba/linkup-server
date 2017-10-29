@@ -43,9 +43,9 @@ function create(router, config) {
 	router = createConfigurationRoutes(this.Configuration, router);
 	router = createLikesRoutes(this.Likes, router);
 	router = createLinkRoutes(this.Link, router);
-	router = createReportedRoutes(this.Users, router);
+	router = createReportedRoutes(this.Users, config, router);
+	router = createUserDisabled(this.Users, router);
 	router = createBlockedRoutes(this.Users, router);
-	//router = createUserDisabled(this.Users, router);
 	return router;
 }
 
@@ -167,7 +167,7 @@ Eliminar un reporte especifico de un usuario DELETE /users/:user_id/report/:user
 Obtener todos los reportes de un usuario GET /users/:user_id/report
 Obtener todos los usuarios reportados GET /reported
 **/
-function createReportedRoutes(Users, router) {
+function createReportedRoutes(Users, config, router) {
 	router.route('/users/:user_id/report')
 		.post(function(req,res) {
 			Users.reportUser(req.params.user_id, req.body, function(err, response) {
@@ -192,7 +192,7 @@ function createReportedRoutes(Users, router) {
 		})
 		.delete(function(req, res) {
 			// delete all reports of user :user_id
-			Users.deleteReports(req.params.user_id, function (err, response) {
+			Users.deleteReports(config, req.params.user_id, function (err, response) {
 				if (err) {
 					return res.status(500).json({
 						statusCode: 500,
@@ -267,13 +267,32 @@ function createUserDisabled(Users, router) {
 	router.route('/users/:user_id/disable')
 		.post(function (req, res) {
 			//disable user
+			Users.disableUser(req.params.user_id, function(err, response) {
+				if (err) {
+					return res.status(500).json({
+						statusCode: 500,
+						data: err
+					});
+				}
+				if (response != "OK") {
+					return res.status(404).json({
+						statusCode: 404,
+						data: response
+					});	
+				} else {
+			    	return res.status(200).json({
+						statusCode: 200,
+						data: response
+					});
+				}
+			})
 		})
-	router.route('/users/:user_id/enable')
+	/*router.route('/users/:user_id/enable')
 		.post(function (req, res) {
 			//enable user
-		})
+		})*/
+	return router;
 }
-
 
 
 function createUserPreferencesRoutes(Preferences, router) {

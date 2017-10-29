@@ -18,6 +18,8 @@ function Users(config, Around, Link) {
 	this.getBlockedUsers = getBlockedUsers;
 	this.blockUser = blockUser;
 	this.unblockUser = unblockUser;
+	this.enableUser = enableUser;
+	this.disableUser = disableUser;
 }
 
 function createUsersController(config, Around, Link) {
@@ -43,7 +45,8 @@ function getUsers(callback) {
 						education: JSON.parse(response.education),
 						description: response.description,
 						pictures: JSON.parse(response.pictures),
-						location: JSON.parse(response.location)
+						location: JSON.parse(response.location),
+						disable: (response.disable != undefined) ? response.disable : false
 					}
 					users.push(user);
 					callbackIt();
@@ -76,7 +79,8 @@ function getUser(userId, callback) {
 				education: JSON.parse(response.education),
 				description: response.description,
 				pictures: JSON.parse(response.pictures),
-				location: JSON.parse(response.location)
+				location: JSON.parse(response.location),
+				disable: (response.disable != undefined) ? (response.disable) : false
 			}
 			return callback(null, user);
 		} else {
@@ -84,8 +88,6 @@ function getUser(userId, callback) {
 		}
 	})
 }
-
-
 
 function createUser(userId, user, Preferences, callback) {
 	var Preferences = Preferences;
@@ -122,7 +124,8 @@ function createUser(userId, user, Preferences, callback) {
 								gender: user.gender,
 								education: JSON.parse(user.education),
 								description: user.description,
-								pictures: JSON.parse(user.pictures)
+								pictures: JSON.parse(user.pictures),
+								disable: user.disable
 							}
 							return callback(null, userModel);
 							
@@ -252,7 +255,8 @@ function parseUser(facebookUser, callbackUser) {
 			gender: facebookUser.gender,
 			education: JSON.stringify(education),
 			description: "",
-			pictures: JSON.stringify([])
+			pictures: JSON.stringify([]),
+			disable: false
 		}
 		
 	    return callbackUser(user);
@@ -279,8 +283,7 @@ function reportUser(userId, userBody, callback) {
 	}
 }
 
-function deleteReports(userId, callback) {
-	var config = this.config;
+function deleteReports(config, userId, callback) {
 	config.redisLib.removeFromSet(config.reportedKey, userId, function (err, response) {
 		if (err) return callback(err, null);
 		config.redisLib.keys(config.reportedUserKey+userId+'*', function (err, keysUser) {
@@ -316,8 +319,6 @@ function getReports(userId, callback) {
 			})
 			
 		}, function finish(err) {
-			console.log(reports);
-			console.log(callback);
 			if (err) return callback(err, null);
 			return callback(null, reports);
 		});
@@ -498,6 +499,102 @@ function parseUserForElasticSearch(userId, preferences, callback) {
 	})
 }
 
+function disableUser(userId, callback) {
+	//eliminar d los around de todos, eliminar los reports
+	// agregar field en user que indique enable: true/false
+	var config = this.config;
+	config.async.waterfall([
+		function checkDisabled(cb) {
+			config.redisLib.getHashField(config.usersKey+userId, 'disable', function(err, res) {
+				if (res == true || res == "true") {
+					return callback(null, "Usuario bloqueado previamente");
+				} else {
+					return cb();
+				}
+			});
+		},	
+	    function removeFromAround(cb) {
+	    	config.redisLib.deleteKey(config.aroundKey+userId, function(err, response) {
+				if (err) return cb(err, null);
+				return cb(null);
+			});
+	    },
+	    function removeFromAround(cb) {
+	    	config.redisLib.keys(config.aroundKey+userId+'*', function(err, aroundKeyIds) {
+	    		config.async.each(aroundKeyIds, function (key, cbIt) {
+					config.redisLib.deleteKey(key, function(err, response) {
+						if (err) return cbIt(err, null);
+						return cbIt();
+					});
+				}, function finish(err) {
+					if (err) return cb(err, null);
+					return cb(null);
+				});
+	    	});
+	    },
+	    function removeFromAround(cb) {
+	    	config.redisLib.keys(config.aroundKey+'*'+userId, function(err, aroundKeyIds) {
+	    		config.async.each(aroundKeyIds, function (key, cbIt) {
+					config.redisLib.deleteKey(key, function(err, response) {
+						if (err) return cbIt(err, null);
+						return cbIt();
+					});
+				}, function finish(err) {
+					if (err) return cb(err, null);
+					return cb(null);
+				});
+	    	});
+	    },
+	    function disableLink(cb) {
+	    	config.redisLib.keys(config.linkKey+'*'+userId, function(err, aroundKeyIds) {
+	    		config.async.each(aroundKeyIds, function (key, cbIt) {
+					config.redisLib.setHashField(key, "disable", true, function(err, response) {
+						if (err) return cbIt(err, null);
+						return cbIt();
+					});
+				}, function finish(err) {
+					if (err) return cb(err, null);
+					return cb(null);
+				});
+	    	});
+	    },
+	    function disableLink(cb) {
+	    	config.redisLib.keys(config.linkKey+userId+'*', function(err, aroundKeyIds) {
+	    		config.async.each(aroundKeyIds, function (key, cbIt) {
+					config.redisLib.setHashField(key, "disable", true, function(err, response) {
+						if (err) return cbIt(err, null);
+						return cbIt();
+					});
+				}, function finish(err) {
+					if (err) return cb(err, null);
+					return cb(null);
+				});
+	    	});
+	    },
+	    function updateStatus(cb) {
+	    	config.redisLib.setHashField(config.usersKey+userId, "disable", true, function (err, response) {
+				if (err) return cb(err, null);
+				return cb(null);
+			});
+	    },
+	    function deleteReportsOfUser(cb) {
+	    	deleteReports(config, userId, function (err, response) {
+	    		if (err) return cb(err, null);
+	    		return cb(null);
+	    	})
+	    },
+	], function (error) {
+	    if (error) {
+	    	return callback(error, null);
+	    }
+	    return callback(null, "OK");
+	});
+}
+
+function enableUser(userId, callback) {
+	
+}
+
 module.exports = {
 	createUsersController: createUsersController,
 	getUser: getUser,
@@ -513,5 +610,7 @@ module.exports = {
 	getUsers: getUsers,
 	blockUser: blockUser,
 	getBlockedUsers: getBlockedUsers,
-	unblockUser: unblockUser
+	unblockUser: unblockUser,
+	enableUser: enableUser,
+	disableUser: disableUser
 }
