@@ -30,7 +30,8 @@ function getLinks(userId, callback) {
 						name: linkData.name,
 						picture: linkData.picture,
 						dateOfLink: linkData.dateOfLink,
-						block: (linkData.block != undefined) ? linkData.block : false
+						block: (linkData.block != undefined) ? linkData.block : false,
+						disable: (linkData.disable != undefined) ? linkData.disable : false 
 					};
 
 					links.push(linkObj);
@@ -76,7 +77,8 @@ function createLink(userId, userIdLinked, callback) {
 						    				name: user.name,
 						    				dateOfLink: Date.now(),
 						    				picture: user.picture,
-						    				block: false
+						    				block: false,
+						    				disable: false
 						    			}
 
 						    			var myUserModel = {
@@ -84,7 +86,8 @@ function createLink(userId, userIdLinked, callback) {
 						    				name: myUser.name,
 						    				dateOfLink: Date.now(),
 						    				picture: myUser.picture,
-						    				block: false
+						    				block: false,
+						    				disable: false
 						    			}
 
 						    			//guargo la info del match

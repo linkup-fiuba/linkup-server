@@ -177,6 +177,14 @@ function createAroundUser(userId, userPreferences, callbackAround) {
 						});
 					},
 					function (user, otherUser, cb) {
+						//check if user is disabled
+						if (otherUser.disable || otherUser.disable == "true") {
+							return callbackIt();
+						} else {
+							return cb(null, user, otherUser);
+						}
+					},
+					function (user, otherUser, cb) {
 						//valido que no sea un usuario previamente bloqueado
 						config.redisLib.isMember(config.blockedKey+userId, userMatch.id, function (err, response) {
 							if (err) return cb(err, null);
