@@ -149,6 +149,9 @@ function createUserRoutes(Users, Preferences, router) {
 						data: err
 					});
 				}
+				var items = response.length;
+				var header = '0-'+(items-1)+'/'+items;
+				res.setHeader('Content-Range', 'items '+header);
 				return res.status(200).json({
 							statusCode: 200,
 							data: response
