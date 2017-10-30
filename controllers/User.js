@@ -398,6 +398,37 @@ function getReportedUsers(queryParams, callback) {
 			getReports(config, filter.userId, function(err, response) {
 				return callback(null, response);
 			})
+		} else {
+			config.redisLib.getFromSet(config.reportedKey, function(err, usersReportedIds) {
+				var usersReported = [];
+				config.async.each(usersReportedIds, function (userId, callbackIt) {
+					config.redisLib.keys(config.reportedUserKey+userId+'*', function (err, keysUser) {
+						var users = [];
+						config.async.each(keysUser, function (key, cbIt) {
+							config.redisLib.getHash(key, function(err, response) {
+								if (err) return cbIt(err, null);
+								var userReported = {
+									id: response.id,
+									date: response.date,
+									userIdReporter: response.userIdReporter,
+									userId: response.userId,
+									type: response.type,
+									reason: response.reason
+								};
+								usersReported.push(userReported);
+								return cbIt();
+							})
+							
+						}, function finish(err) {
+							return callbackIt();
+						});
+					})
+
+				}, function finish(err) {
+					if (err) return callback(err, null);
+					return callback(null, usersReported);
+				});
+			})
 		}
 		var userId = null;
 	} else {
