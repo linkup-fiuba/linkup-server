@@ -178,7 +178,7 @@ function createAroundUser(userId, userPreferences, callbackAround) {
 					},
 					function (user, otherUser, cb) {
 						//check if user is disabled
-						if (otherUser.disable || otherUser.disable == "true") {
+						if (otherUser.disable == true || otherUser.disable == "true") {
 							return callbackIt();
 						} else {
 							return cb(null, user, otherUser);

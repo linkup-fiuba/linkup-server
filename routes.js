@@ -16,11 +16,11 @@ var LikesController			= require('./controllers/Likes');
 function create(router, config) {
 	this.config = config;
 	this.Around = AroundController.createAroundController(this.config);	
-	this.Users = UsersController.createUsersController(this.config);
-	this.Preferences = PreferencesController.createPreferencesController(this.config, this.Users, this.Around);
+	this.Link = LinkController.createLinkController(this.config);
 	this.Location = LocationController.createLocationController(this.config);
 	this.Configuration = ConfigurationController.createConfigurationController(this.config);
-	this.Link = LinkController.createLinkController(this.config);
+	this.Users = UsersController.createUsersController(this.config, this.Around, this.Link);
+	this.Preferences = PreferencesController.createPreferencesController(this.config, this.Users, this.Around);
 	this.Likes = LikesController.createLikesController(this.config, this.Link);
 	// middleware to use for all requests
 	router.use(function(req, res, next) {
