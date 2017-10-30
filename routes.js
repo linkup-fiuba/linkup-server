@@ -36,7 +36,7 @@ function create(router, config) {
 				data: "Welcome to linkup API"
 			});	
 		});
-	router = createUserRoutes(this.Users, this.Preferences, router);
+	router = createUserRoutes(this.Users, this.Preferences, config, router);
 	router = createUserPreferencesRoutes(this.Preferences, router);
 	router = createUserAroundRoutes(this.Around, router);
 	router = createUserLocationRoutes(this.Location, router);
@@ -49,7 +49,7 @@ function create(router, config) {
 	return router;
 }
 
-function createUserRoutes(Users, Preferences, router) {
+function createUserRoutes(Users, Preferences, config, router) {
 	router.route('/users/:user_id')
 	    .get(function(req, res) {
 	    	Users.getUser(config, req.params.user_id, function(err,response) {
@@ -649,7 +649,7 @@ function createLikesRoutes(Likes, router) {
 			})
 		})
 
-	router.route('/users/:user_id/superlike')
+	router.route('/users/:user_id/superlikes')
 	.post(function (req, res) {
 		Likes.setSuperLike(req.params.user_id, req.body.userId, function (err, reply) {
 			if (err) {
