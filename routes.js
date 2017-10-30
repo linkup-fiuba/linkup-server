@@ -340,6 +340,31 @@ function createUserDisabled(Users, router) {
 				}
 			})
 		})
+	router.route('/users/:user_id/enable')
+		.post(function (req, res) {
+			//disable user
+			Users.enableUser(req.params.user_id, function(err, response) {
+				if (err) {
+					return res.status(500).json({
+						statusCode: 500,
+						data: err
+					});
+				}
+				if (response != "OK") {
+					return res.status(404).json({
+						statusCode: 404,
+						data: response
+					});	
+				} else {
+			    	return res.status(200).json({
+						statusCode: 200,
+						data: response
+					});
+				}
+			})
+		})
+
+		
 	/*router.route('/users/:user_id/enable')
 		.post(function (req, res) {
 			//enable user
