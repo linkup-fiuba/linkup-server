@@ -34,13 +34,20 @@ function getUsers(queryParams, callback) {
 	if (Object.keys(queryParams).length != 0) {
 		filter = JSON.parse(queryParams.filter); 
 		if (filter != undefined && filter.id != undefined) {
-			getUser(config, filter.id, function(err, response) {
-				if (response) {
-					return callback(null, response);
-				} else {
-					return callback(null, []);
-				}
-			})
+			var users = [];
+			config.async.each(filter.id, function (id, callbackIt) {
+				getUser(config, id, function(err, response) {
+					if (response) {
+						users.push(response);
+						return callbackIt();
+					} else {
+						return callbackIt();
+					}
+				})	
+			}, function finish(err) {
+				return callback(null, users);
+			});
+			
 		} else {
 			config.redisLib.keys(config.usersKey+'*', function (err, keysUser) {
 			var users = [];
