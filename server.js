@@ -3,17 +3,20 @@
 // =============================================================================
 
 // call the packages we need
-var express    		= require('express');        // call express
-var bodyParser 		= require('body-parser');
-var async 			= require('async');
-var cluster 		= require('cluster');
+var express    			= require('express');        // call express
+var bodyParser 			= require('body-parser');
+var async 					= require('async');
+var cluster 				= require('cluster');
 
-var path			= require("path");
+var path						= require("path");
 
-var config 			= require('./config');
+var config 					= require('./config');
 
-var Routes 			= require('./routes');
+var Routes 					= require('./routes');
 var elasticSearch 	= require('./elasticSearchLib');
+
+var admin 					= require("firebase-admin");
+var FirebaseDatabaseGateway = require('./firebase/FirebaseDatabaseGateway');
 
 if(cluster.isMaster) {
     var numWorkers = require('os').cpus().length;
@@ -115,7 +118,22 @@ if(cluster.isMaster) {
 			});
 		}
 	})
-	
+
+  //Set up firebase
+  var serviceAccount = require("./linkup-1505354379197-firebase-adminsdk-83fgu-2e4fa8a1f5.json");
+
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://linkup-1505354379197.firebaseio.com"
+  });
+
+  var db = admin.database();
+
+  var firebaseDbGateway = FirebaseDatabaseGateway.createFirebaseDBGateway(db);
+
+  firebaseDbGateway.getMessagesBetween("114131919328864", "10155705914200967");
+
+	// Admin
 	app.use(express.static(path.join(__dirname,'../link-up-admin/build')));
 
 	app.get('/', function(req, res) { 
