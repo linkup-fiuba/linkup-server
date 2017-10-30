@@ -620,6 +620,24 @@ function createLikesRoutes(Likes, router) {
 				});
 			})
 		})
+
+	router.route('/users/:user_id/superlike')
+	.post(function (req, res) {
+		Likes.setSuperLike(req.params.user_id, req.body.userId, function (err, reply) {
+			if (err) {
+    			return res.status(500).json({
+    				statusCode: 500,
+    				data: err
+    			});
+    		}
+    		
+	    	return res.json({
+				statusCode: 200,
+				data: reply
+			});
+    		
+		});
+	})
 		
 	return router;
 }

@@ -6,6 +6,7 @@ function Likes(config, link) {
 	this.Link = link;
 	this.getLikes = getLikes;
 	this.setLike = setLike;
+	this.setSuperLike = setSuperLike;
 	this.removeLike = removeLike;
 }
 
@@ -62,6 +63,76 @@ function setLike(userId, userIdLiked, callback) {
 	})
 }
 
+function setSuperLike(userId, userIdLiked, callback) {
+	var config = this.config;
+	var Link = this.Link;
+	//agrego el userIdLiked a likes_userId. Luego chequeo en likes_userIdLiked si esta el userId.
+	// SI está hay un nuevo link. 
+	// SIno agregar en los around en campo like: true
+	config.redisLib.addToSet(config.likesKey+userId, userIdLiked, function (err, response) {
+		if (err) return callback(err, null);
+		//save info of like in around 
+		config.redisLib.setHashField(config.aroundKey+userId+':'+userIdLiked, 'superlike', true, function (err, responseSave) {
+			if (err) return callback(err, null);
+			//chequeo si el otro usuario dio like a userId
+			config.redisLib.isMember(config.likesKey+userIdLiked, userId, function (err, response) {
+				if (err) return callback(err, null);
+				//si dio like. Hay un nuevo link
+				if (response) {
+					Link.createLink(userId, userIdLiked, function (err, response) {
+						if (err) return callback(err, null);
+						var responseLike = {
+							link: response
+						}
+						return callback(null, responseLike);
+					});
+				} else {
+					//create user around en el otro usuario y que aparezca primero
+					config.redisLib.getHash(config.usersKey+userId, function(err,response) {
+						if (err) return callback(err, null);
+						if (response) {
+							var user = {
+								id: response.id,
+								name: response.name,
+								description: response.description,
+								picture: response.picture,
+							}
+
+							var userModel = {
+								id: user.id,
+								name: user.name,
+								description: user.description,
+								picture: user.picture,
+								like: false,
+								block: false,
+								distance: 0
+							};
+
+							//save info of around 
+							config.redisLib.setHash(config.aroundKey+userIdLiked+':'+userId, userModel, function (err, responseSave) {
+								if (err) return cb(err, null);
+								return callbackIt();
+			
+							})
+							var responseLike = {
+									link: false
+							}
+							return callback(null, responseLike);
+							return callback(null, user);
+						} else {
+							return callback(null, null);
+						}
+					})
+					
+				}
+			});
+			
+		});
+		
+	})
+}
+
+
 function removeLike(userId, userIdUnlike, callback) {
 	var config = this.config;
 	var Link = this.Link;
@@ -92,5 +163,6 @@ module.exports = {
 	createLikesController: createLikesController,
 	getLikes: getLikes,
 	setLike: setLike,
+	setSuperLike: setSuperLike,
 	removeLike: removeLike
 }
