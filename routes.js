@@ -150,7 +150,8 @@ function createUserRoutes(Users, Preferences, router) {
 					});
 				}
 				var items = response.length;
-				var header = '0-'+(items-1)+'/'+items;
+				var maxVal = (items > 0) ? (items-1) : 0;
+				var header = '0-'+maxVal+'/'+items;
 				res.setHeader('Content-Range', 'items '+header);
 				return res.status(200).json({
 							statusCode: 200,
@@ -216,7 +217,7 @@ function createReportedRoutes(Users, config, router) {
 			});
 		})
 		.get(function (req, res) {
-			Users.getReports(req.params.user_id, function(err, response) {
+			Users.getReports(config, req.params.user_id, function(err, response) {
 				if (err) {
 					return res.status(500).json({
 						statusCode: 500,
@@ -230,7 +231,8 @@ function createReportedRoutes(Users, config, router) {
 					});	
 				} else {
 					var items = response.length;
-					var header = '0-'+(items-1)+'/'+items;
+					var maxVal = (items > 0) ? (items-1) : 0;
+					var header = '0-'+maxVal+'/'+items;
 					res.setHeader('Content-Range', 'items '+header);
 			    	return res.status(200).json({
 						statusCode: 200,
@@ -243,7 +245,7 @@ function createReportedRoutes(Users, config, router) {
 
 	router.route('/reports')
 		.get(function(req,res) {
-			Users.getReportedUsers(function(err, response) {
+			Users.getReportedUsers(req.query, function(err, response) {
 				if (err) {
 					return res.status(500).json({
 						statusCode: 500,
@@ -257,7 +259,8 @@ function createReportedRoutes(Users, config, router) {
 					});	
 				} else {
 					var items = response.length;
-					var header = '0-'+(items-1)+'/'+items;
+					var maxVal = (items > 0) ? (items-1) : 0;
+					var header = '0-'+maxVal+'/'+items;
 					res.setHeader('Content-Range', 'items '+header);
 			    	return res.status(200).json({
 						statusCode: 200,
@@ -620,6 +623,24 @@ function createLikesRoutes(Likes, router) {
 				});
 			})
 		})
+
+	router.route('/users/:user_id/superlike')
+	.post(function (req, res) {
+		Likes.setSuperLike(req.params.user_id, req.body.userId, function (err, reply) {
+			if (err) {
+    			return res.status(500).json({
+    				statusCode: 500,
+    				data: err
+    			});
+    		}
+    		
+	    	return res.json({
+				statusCode: 200,
+				data: reply
+			});
+    		
+		});
+	})
 		
 	return router;
 }
