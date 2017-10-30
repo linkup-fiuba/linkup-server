@@ -362,8 +362,7 @@ function deleteReports(config, userId, callback) {
 
 }
 
-function getReports(userId, callback) {
-	var config = this.config;
+function getReports(config, userId, callback) {
 	config.redisLib.keys(config.reportedUserKey+userId+'*', function (err, keysUser) {
 		if (err) return callback(err, null);
 		var reports = [];
@@ -390,39 +389,50 @@ function getReports(userId, callback) {
 
 }
 
-function getReportedUsers(callback) {
+function getReportedUsers(queryParams, callback) {
 	var config = this.config;
-	config.redisLib.getFromSet(config.reportedKey, function(err, usersReportedIds) {
-		var usersReported = [];
-		config.async.each(usersReportedIds, function (userId, callbackIt) {
-
-			config.redisLib.keys(config.reportedUserKey+userId+'*', function (err, keysUser) {
-				var users = [];
-				config.async.each(keysUser, function (key, cbIt) {
-					config.redisLib.getHash(key, function(err, response) {
-						if (err) return cbIt(err, null);
-						var userReported = {
-							id: response.id,
-							date: response.date,
-							userIdReporter: response.userIdReporter,
-							userId: response.userId,
-							type: response.type,
-							reason: response.reason
-						};
-						usersReported.push(userReported);
-						return cbIt();
-					})
-					
-				}, function finish(err) {
-					return callbackIt();
-				});
+	var filter = undefined;
+	if (Object.keys(queryParams).length != 0) {
+		filter = JSON.parse(queryParams.filter); 
+		if (filter != undefined && filter.userId != undefined) {
+			getReports(config, filter.userId, function(err, response) {
+				return callback(null, response);
 			})
+		}
+		var userId = null;
+	} else {
+		config.redisLib.getFromSet(config.reportedKey, function(err, usersReportedIds) {
+			var usersReported = [];
+			config.async.each(usersReportedIds, function (userId, callbackIt) {
+				config.redisLib.keys(config.reportedUserKey+userId+'*', function (err, keysUser) {
+					var users = [];
+					config.async.each(keysUser, function (key, cbIt) {
+						config.redisLib.getHash(key, function(err, response) {
+							if (err) return cbIt(err, null);
+							var userReported = {
+								id: response.id,
+								date: response.date,
+								userIdReporter: response.userIdReporter,
+								userId: response.userId,
+								type: response.type,
+								reason: response.reason
+							};
+							usersReported.push(userReported);
+							return cbIt();
+						})
+						
+					}, function finish(err) {
+						return callbackIt();
+					});
+				})
 
-		}, function finish(err) {
-			if (err) return callback(err, null);
-			return callback(null, usersReported);
-		});
-	})
+			}, function finish(err) {
+				if (err) return callback(err, null);
+				return callback(null, usersReported);
+			});
+		})
+
+	}
 }
 
 

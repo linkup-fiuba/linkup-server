@@ -216,7 +216,7 @@ function createReportedRoutes(Users, config, router) {
 			});
 		})
 		.get(function (req, res) {
-			Users.getReports(req.params.user_id, function(err, response) {
+			Users.getReports(config, req.params.user_id, function(err, response) {
 				if (err) {
 					return res.status(500).json({
 						statusCode: 500,
@@ -243,7 +243,7 @@ function createReportedRoutes(Users, config, router) {
 
 	router.route('/reports')
 		.get(function(req,res) {
-			Users.getReportedUsers(function(err, response) {
+			Users.getReportedUsers(req.query, function(err, response) {
 				if (err) {
 					return res.status(500).json({
 						statusCode: 500,
