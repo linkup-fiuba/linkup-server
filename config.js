@@ -1,7 +1,7 @@
 var redisLib 			= require('./redisLib');
 var elasticSearchLib 	= require('./elasticSearchLib');
 var async 				= require('async');
-const uuidv1 = require('uuid/v1');
+const uuidv1 			= require('uuid/v1');
 
 var config = {};
 
