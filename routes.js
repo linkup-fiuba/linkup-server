@@ -150,7 +150,6 @@ function createUserRoutes(Users, Preferences, router) {
 					});
 				}
 				var items = (response.length != undefined) ? response.length : 1;
-				console.log(response);
 				var maxVal = (items > 0) ? (items-1) : 0;
 				var header = '0-'+maxVal+'/'+items;
 				res.setHeader('Content-Range', 'items '+header);
