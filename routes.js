@@ -150,7 +150,8 @@ function createUserRoutes(Users, Preferences, router) {
 					});
 				}
 				var items = response.length;
-				var header = '0-'+(items-1)+'/'+items;
+				var maxVal = (items > 0) ? (items-1) : 0;
+				var header = '0-'+maxVal+'/'+items;
 				res.setHeader('Content-Range', 'items '+header);
 				return res.status(200).json({
 							statusCode: 200,
@@ -230,7 +231,8 @@ function createReportedRoutes(Users, config, router) {
 					});	
 				} else {
 					var items = response.length;
-					var header = '0-'+(items-1)+'/'+items;
+					var maxVal = (items > 0) ? (items-1) : 0;
+					var header = '0-'+maxVal+'/'+items;
 					res.setHeader('Content-Range', 'items '+header);
 			    	return res.status(200).json({
 						statusCode: 200,
@@ -257,7 +259,8 @@ function createReportedRoutes(Users, config, router) {
 					});	
 				} else {
 					var items = response.length;
-					var header = '0-'+(items-1)+'/'+items;
+					var maxVal = (items > 0) ? (items-1) : 0;
+					var header = '0-'+maxVal+'/'+items;
 					res.setHeader('Content-Range', 'items '+header);
 			    	return res.status(200).json({
 						statusCode: 200,
