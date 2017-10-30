@@ -669,7 +669,46 @@ function disableUser(userId, callback) {
 }
 
 function enableUser(userId, callback) {
-	
+		var config = this.config;
+	config.async.waterfall([
+	    function enableLink(cb) {
+	    	config.redisLib.keys(config.linkKey+'*'+userId, function(err, aroundKeyIds) {
+	    		config.async.each(aroundKeyIds, function (key, cbIt) {
+					config.redisLib.setHashField(key, "disable", false, function(err, response) {
+						if (err) return cbIt(err, null);
+						return cbIt();
+					});
+				}, function finish(err) {
+					if (err) return cb(err, null);
+					return cb(null);
+				});
+	    	});
+	    },
+	    function enableLink(cb) {
+	    	config.redisLib.keys(config.linkKey+userId+'*', function(err, aroundKeyIds) {
+	    		config.async.each(aroundKeyIds, function (key, cbIt) {
+					config.redisLib.setHashField(key, "disable", false, function(err, response) {
+						if (err) return cbIt(err, null);
+						return cbIt();
+					});
+				}, function finish(err) {
+					if (err) return cb(err, null);
+					return cb(null);
+				});
+	    	});
+	    },
+	    function updateStatus(cb) {
+	    	config.redisLib.setHashField(config.usersKey+userId, "disable", false, function (err, response) {
+				if (err) return cb(err, null);
+				return cb(null);
+			});
+	    }
+	], function (error) {
+	    if (error) {
+	    	return callback(error, null);
+	    }
+	    return callback(null, "OK");
+	});
 }
 
 
