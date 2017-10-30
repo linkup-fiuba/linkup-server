@@ -475,7 +475,7 @@ function getUsersAround(config, userId, userIdsAround, userIdsAroundShown, cbUse
 		        					picture: user.picture,
 									description: user.description,
 									like: user.like,
-									superlike: user.superlike,
+									superlike: (user.superlike != undefined ) ? user.superlike : false,
 									block: user.block,
 									distance: user.distance
 								};
