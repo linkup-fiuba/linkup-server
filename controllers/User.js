@@ -28,45 +28,92 @@ function createUsersController(config, Around, Link) {
 	return new Users(config, Around, Link);
 }
 
-function getUsers(callback) {
+function getUsers(queryParams, callback) {
 	var config = this.config;
-	config.redisLib.keys(config.usersKey+'*', function (err, keysUser) {
-		var users = [];
-		config.async.each(keysUser, function (key, callbackIt) {
-			config.redisLib.getHash(key, function(err,response) {
-				if (err) return callback(err, null);
+		var filter = undefined;
+	if (Object.keys(queryParams).length != 0) {
+		filter = JSON.parse(queryParams.filter); 
+		if (filter != undefined && filter.id != undefined) {
+			getUser(config, filter.id, function(err, response) {
 				if (response) {
-					var user = {
-						id: response.id,
-						name: response.name,
-						birthday: response.birthday,
-						age: response.age,
-						picture: response.picture,
-						likes: JSON.parse(response.likes),
-						gender: response.gender,
-						education: JSON.parse(response.education),
-						description: response.description,
-						pictures: JSON.parse(response.pictures),
-						location: JSON.parse(response.location),
-						disable: (response.disable != undefined) ? response.disable : false
-					}
-					users.push(user);
-					callbackIt();
+					return callback(null, response);
 				} else {
-					return callbackIt();
+					return callback(null, []);
 				}
 			})
+		} else {
+			config.redisLib.keys(config.usersKey+'*', function (err, keysUser) {
+			var users = [];
+			config.async.each(keysUser, function (key, callbackIt) {
+				config.redisLib.getHash(key, function(err,response) {
+					if (err) return callback(err, null);
+					if (response) {
+						var user = {
+							id: response.id,
+							name: response.name,
+							birthday: response.birthday,
+							age: response.age,
+							picture: response.picture,
+							likes: JSON.parse(response.likes),
+							gender: response.gender,
+							education: JSON.parse(response.education),
+							description: response.description,
+							pictures: JSON.parse(response.pictures),
+							location: JSON.parse(response.location),
+							disable: (response.disable != undefined) ? response.disable : false
+						}
+						users.push(user);
+						callbackIt();
+					} else {
+						return callbackIt();
+					}
+				})
 
-			
-		}, function finish(err) {
-			return callback(null, users);
-		});
-	})
+				
+			}, function finish(err) {
+				return callback(null, users);
+			});
+		})
+		}
+		var userId = null;
+	} else {
+		config.redisLib.keys(config.usersKey+'*', function (err, keysUser) {
+			var users = [];
+			config.async.each(keysUser, function (key, callbackIt) {
+				config.redisLib.getHash(key, function(err,response) {
+					if (err) return callback(err, null);
+					if (response) {
+						var user = {
+							id: response.id,
+							name: response.name,
+							birthday: response.birthday,
+							age: response.age,
+							picture: response.picture,
+							likes: JSON.parse(response.likes),
+							gender: response.gender,
+							education: JSON.parse(response.education),
+							description: response.description,
+							pictures: JSON.parse(response.pictures),
+							location: JSON.parse(response.location),
+							disable: (response.disable != undefined) ? response.disable : false
+						}
+						users.push(user);
+						callbackIt();
+					} else {
+						return callbackIt();
+					}
+				})
+
+				
+			}, function finish(err) {
+				return callback(null, users);
+			});
+		})
+	}
 
 }
 
-function getUser(userId, callback) {
-	var config = this.config;
+function getUser(config, userId, callback) {
 	config.redisLib.getHash(config.usersKey+userId, function(err,response) {
 		if (err) return callback(err, null);
 		if (response) {
@@ -396,7 +443,11 @@ function getReportedUsers(queryParams, callback) {
 		filter = JSON.parse(queryParams.filter); 
 		if (filter != undefined && filter.userId != undefined) {
 			getReports(config, filter.userId, function(err, response) {
-				return callback(null, response);
+				if (response) {
+					return callback(null, response);
+				} else {
+					return callback(null, []);
+				}
 			})
 		} else {
 			config.redisLib.getFromSet(config.reportedKey, function(err, usersReportedIds) {

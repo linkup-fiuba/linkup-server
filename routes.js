@@ -52,7 +52,7 @@ function create(router, config) {
 function createUserRoutes(Users, Preferences, router) {
 	router.route('/users/:user_id')
 	    .get(function(req, res) {
-	    	Users.getUser(req.params.user_id, function(err,response) {
+	    	Users.getUser(config, req.params.user_id, function(err,response) {
 	    		if (err) {
 	    			return res.status(500).json({
 						statusCode: 500,
@@ -141,15 +141,16 @@ function createUserRoutes(Users, Preferences, router) {
 				
 			})
 		})
-		.get(function (err, res) {
-			Users.getUsers(function (err, response) {
+		.get(function (req, res) {
+			Users.getUsers(req.query, function (err, response) {
 				if (err) {
 					return res.status(500).json({
 						statusCode: 500,
 						data: err
 					});
 				}
-				var items = response.length;
+				var items = (response.length != undefined) ? response.length : 1;
+				console.log(response);
 				var maxVal = (items > 0) ? (items-1) : 0;
 				var header = '0-'+maxVal+'/'+items;
 				res.setHeader('Content-Range', 'items '+header);
