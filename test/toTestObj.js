@@ -50,8 +50,8 @@ var user = {
 var maleUserTwo = {
   id: "2",
   name: "Agustin Gimenez",
-  birthday: "08/19/1989",
-  age: "24",
+  birthday: "08/19/1988",
+  age: "28",
   picture: {
     data: {
       url: "http://cdn.blogs.revistagq.com/nadaimporta/wp-content/uploads/2014/02/Ser-un-hombre.jpg"
@@ -195,7 +195,7 @@ var maleUserFive = {
   id: "115823062492556",
   name: "Agustin Zunino",
   birthday: "09/11/1988",
-  age: "24",
+  age: "28",
   picture: {
     data: {
       url: "https://graph.facebook.com/115823062492556/picture?height=500&width=500&migration_overrides=%7Boctober_2012%3Atrue%7D"

@@ -114,14 +114,13 @@ function setSuperLike(userId, userIdLiked, callback) {
 								//save info of around 
 								config.redisLib.setHash(config.aroundKey+userIdLiked+':'+userId, userModel, function (err, responseSave) {
 									if (err) return cb(err, null);
-									return callbackIt();
+									var responseLike = {
+										link: false
+									}
+									return callback(null, responseLike);
 				
 								})
-								var responseLike = {
-										link: false
-								}
-								return callback(null, responseLike);
-								return callback(null, user);
+								
 							} else {
 								return callback(null, null);
 							}

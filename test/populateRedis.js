@@ -244,7 +244,7 @@ config.async.waterfall([
 					Users.createUser(userParsed.id, userParsed, Preferences, function (err, response) {
 					console.log("========");
 						if (response) {
-							Location.updateLocation(userParsed.id, objects.locationNear, function (err, response) {
+							Location.updateLocation(userParsed.id, objects.locationFar, function (err, response) {
 								if (response) {
 									Preferences.parsePreferences(userParsed.id, objects.userSixPreferences, function (err, prefParsed) {
 										if (prefParsed) {
