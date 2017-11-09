@@ -69,7 +69,10 @@ function getUsers(queryParams, callback) {
 							description: response.description,
 							pictures: JSON.parse(response.pictures),
 							location: JSON.parse(response.location),
-							disable: (response.disable != undefined) ? response.disable : false
+							disable: (response.disable != undefined) ? response.disable : false,
+							premium: (response.premium != undefined) ? response.premium : false ,
+							createdAt: (response.createdAt != undefined) ? response.createdAt : null ,
+							premiumAt: (response.premiumAt != undefined) ? response.premiumAt : null
 						}
 						users.push(user);
 						callbackIt();
@@ -104,7 +107,10 @@ function getUsers(queryParams, callback) {
 							description: response.description,
 							pictures: JSON.parse(response.pictures),
 							location: JSON.parse(response.location),
-							disable: (response.disable != undefined) ? response.disable : false
+							disable: (response.disable != undefined) ? response.disable : false,
+							premium: (response.premium != undefined) ? response.premium : false ,
+							createdAt: (response.createdAt != undefined) ? response.createdAt : null ,
+							premiumAt: (response.premiumAt != undefined) ? response.premiumAt : null
 						}
 						users.push(user);
 						callbackIt();
@@ -138,7 +144,10 @@ function getUser(config, userId, callback) {
 				description: response.description,
 				pictures: JSON.parse(response.pictures),
 				location: JSON.parse(response.location),
-				disable: (response.disable != undefined) ? (response.disable) : false
+				disable: (response.disable != undefined) ? (response.disable) : false,
+				premium: (response.premium != undefined) ? response.premium : false ,
+				createdAt: (response.createdAt != undefined) ? response.createdAt : null ,
+				premiumAt: (response.premiumAt != undefined) ? response.premiumAt : null
 			}
 			return callback(null, user);
 		} else {
@@ -183,7 +192,10 @@ function createUser(userId, user, Preferences, callback) {
 								education: JSON.parse(user.education),
 								description: user.description,
 								pictures: JSON.parse(user.pictures),
-								disable: user.disable
+								disable: user.disable,
+								premium: user.premium,
+								createdAt: user.createdAt,
+								premiumAt: user.premiumAt
 							}
 							return callback(null, userModel);
 							
@@ -314,7 +326,10 @@ function parseUser(facebookUser, callbackUser) {
 			education: JSON.stringify(education),
 			description: "",
 			pictures: JSON.stringify([]),
-			disable: false
+			disable: false,
+			premium: false,
+			createdAt: Date.now(),
+			premiumAt: null
 		}
 		
 	    return callbackUser(user);
