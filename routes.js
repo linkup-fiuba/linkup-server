@@ -195,8 +195,8 @@ function createReportedRoutes(Users, config, router) {
 			});
 		})
 		.delete(function(req, res) {
-			// delete all reports of user :user_id
-			Users.deleteReports(config, req.params.user_id, function (err, response) {
+			// close all reports of user :user_id
+			Users.closeReports(config, req.params.user_id, function (err, response) {
 				if (err) {
 					return res.status(500).json({
 						statusCode: 500,
@@ -292,7 +292,7 @@ function createReportedRoutes(Users, config, router) {
 			});
 		})
 		.delete(function(req,res) {
-			Users.deleteReport(req.params.report_id, function(err, response) {
+			Users.closeReport(req.params.report_id, function(err, response) {
 				if (err) {
 					return res.status(500).json({
 						statusCode: 500,

@@ -13,6 +13,8 @@ function Users(config, Around, Link) {
 	this.getReport = getReport;
 	this.deleteReport = deleteReport;
 	this.deleteReports = deleteReports;
+	this.closeReport = closeReport;
+	this.closeReports = closeReports;
 	this.getReports = getReports;
 	this.getReportedUsers = getReportedUsers;
 	this.parseUserForElasticSearch = parseUserForElasticSearch;
@@ -331,7 +333,8 @@ function reportUser(userId, userBody, callback) {
 				userIdReporter: userBody.userIdReporter,
 				userId: userId,
 				type: userBody.reason,
-				reason: (userBody.reason != undefined) ? userBody.reason : "default"
+				reason: (userBody.reason != undefined) ? userBody.reason : "default",
+				status: "open"
 			}			
 		} else {
 			var reportedUser = {
@@ -340,7 +343,8 @@ function reportUser(userId, userBody, callback) {
 				userIdReporter: userBody.userIdReporter,
 				userId: userId,
 				type: "Otro",
-				reason: (userBody.reason != undefined) ? userBody.reason : "default"
+				reason: (userBody.reason != undefined) ? userBody.reason : "default",
+				status: "open"
 			}
 		}
 
@@ -375,13 +379,28 @@ function getReport(reportId, callback) {
 					userIdReporter: reportResponse.userIdReporter,
 					userId: reportResponse.userId,
 					type: reportResponse.type,
-					reason: reportResponse.reason
+					reason: reportResponse.reason,
+					status: (reportResponse.status != undefined) ? reportResponse.status : 'open'
 				};
 				return callback(null, report);
 			})
 		}
 	} )
 
+}
+
+function closeReport(reportId, callback) {
+	var config = this.config;
+	config.redisLib.keys(config.reportedUserKey+'*'+reportId, function (err, response) {
+		if (!response || response.length == 0) {
+			return callback(null, []);
+		} else {
+			config.redisLib.setHashField(response[0], 'status', 'closed', function(err, reportResponse) {
+				if (err) return callback(err, null);
+				return callback(null, true);
+			})
+		}
+	} )
 }
 
 function deleteReport(reportId, callback) {
@@ -416,6 +435,24 @@ function deleteReports(config, userId, callback) {
 
 }
 
+function closeReports(config, userId, callback) {
+	config.redisLib.removeFromSet(config.reportedKey, userId, function (err, response) {
+		if (err) return callback(err, null);
+		config.redisLib.keys(config.reportedUserKey+userId+'*', function (err, keysUser) {
+			config.async.each(keysUser, function (key, cbIt) {
+				config.redisLib.setHashField(key, 'status', 'closed', function(err, response) {
+					if (err) return cbIt(err, null);
+					return cbIt();
+				})
+			}, function finish(err) {
+				if (err) return callback(err, null);
+				return callback(null, true);
+			});
+		})
+	})
+
+}
+
 function getReports(config, userId, callback) {
 	config.redisLib.keys(config.reportedUserKey+userId+'*', function (err, keysUser) {
 		if (err) return callback(err, null);
@@ -429,7 +466,8 @@ function getReports(config, userId, callback) {
 					userIdReporter: response.userIdReporter,
 					userId: response.userId,
 					type: response.type,
-					reason: response.reason
+					reason: response.reason,
+					status: (response.status != undefined) ? response.status : 'open'
 				};
 				reports.push(userReported);
 				return cbIt();
@@ -471,7 +509,8 @@ function getReportedUsers(queryParams, callback) {
 									userIdReporter: response.userIdReporter,
 									userId: response.userId,
 									type: response.type,
-									reason: response.reason
+									reason: response.reason,
+									status: (response.status != undefined) ? response.status : 'open'
 								};
 								usersReported.push(userReported);
 								return cbIt();
@@ -504,7 +543,8 @@ function getReportedUsers(queryParams, callback) {
 								userIdReporter: response.userIdReporter,
 								userId: response.userId,
 								type: response.type,
-								reason: response.reason
+								reason: response.reason,
+								status: (response.status != undefined) ? response.status : 'open'
 							};
 							usersReported.push(userReported);
 							return cbIt();
@@ -818,6 +858,8 @@ module.exports = {
 	deleteReports: deleteReports,
 	getReports: getReports,
 	getReportedUsers: getReportedUsers,
+	closeReport: closeReport,
+	closeReports: closeReports,
 	parseUserForElasticSearch: parseUserForElasticSearch,
 	getUsers: getUsers,
 	blockUser: blockUser,
