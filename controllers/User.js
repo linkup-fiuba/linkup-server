@@ -26,6 +26,7 @@ function Users(config, Around, Link) {
 	this.enableUser = enableUser;
 	this.disableUser = disableUser;
 	this.createPremium = createPremium;
+	this.deletePremium = deletePremium;
 }
 
 function createUsersController(config, Around, Link) {
@@ -1024,10 +1025,17 @@ function createPremium(userBody, callback) {
 				})
 			},
 			function updateDate(cb) {
-				config.redisLib.setHashField(config.usersKey+userBody.userId, 'createdAt', Date.now(), function (err, response) {
+				config.redisLib.getHashField(config.usersKey+userBody.userId, 'createdAt', function (err, createdAt) {
 					if (err) return cb(err);
-					return cb(null);
+					config.redisLib.setHashField(config.usersKey+userBody.userId, 'createdAt', Date.now(), function (err, response) {
+						if (err) return cb(err);
+						config.redisLib.setHashField(config.usersKey+userBody.userId, 'dateCreation', createdAt, function (err, response) {
+							if (err) return cb(err);
+							return cb(null);
+						})
+					})
 				})
+				
 			},
 			function addToPremiumList(cb) {
 				config.redisLib.addToSet(config.premiumKey, userBody.userId, function (err, response) {
@@ -1048,6 +1056,50 @@ function createPremium(userBody, callback) {
 }
 
 
+function deletePremium(userId, callback) {
+	var config = this.config;
+	config.async.waterfall([
+		function setMaxLikes(cb) {
+			config.redisLib.set(config.maxLikesKey+userId, config.maxLikesCommon, function (err, res) {
+				if (err) return cb(err);
+				return cb(null);
+			})
+		},
+		function updateUser(cb) {
+			config.redisLib.setHashField(config.usersKey+userId, 'premium', false, function (err, response) {
+				if (err) return cb(err);
+				return cb(null);
+			})
+		},
+		function updateDate(cb) {
+			config.redisLib.getHashField(config.usersKey+userId, 'dateCreation', function (err, createdAt) {
+				if (err) return cb(err);
+				config.redisLib.setHashField(config.usersKey+userId, 'createdAt', createdAt, function (err, response) {
+					if (err) return cb(err);
+					return cb(null);
+				})
+			})
+			
+		},
+		function addToPremiumList(cb) {
+			config.redisLib.removeFromSet(config.premiumKey, userId, function (err, response) {
+				if (err) return cb(err);
+				return cb(null);
+			})
+		}
+
+	], function (error) {
+	    if (error) {
+	    	return callback(error, null);
+	    }
+	    return callback(null, "OK");
+	});
+		
+	
+
+}
+
+
 Array.prototype.contains = function(element){
     return this.indexOf(element) > -1;
 };
@@ -1059,6 +1111,7 @@ module.exports = {
 	updateUser: updateUser,
 	deleteUser: deleteUser,
 	createPremium: createPremium,
+	deletePremium: deletePremium,
 	parseUser: parseUser,
 	reportUser: reportUser,
 	getReport: getReport,

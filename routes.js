@@ -368,6 +368,30 @@ function createPremiumRoutes(Users, router) {
 
 		});
 
+	router.route('/users/premium/:user_id')
+		.delete(function (req, res) {
+			Users.deletePremium(req.params.user_id, function (err, response) {
+				if (err) {
+					return res.status(500).json({
+						statusCode: 500,
+						data: err
+					});
+				}
+				if (response != "OK") {
+					return res.status(404).json({
+						statusCode: 404,
+						data: response
+					});	
+				} else {
+			    	return res.status(200).json({
+						statusCode: 200,
+						data: response
+					});
+				}
+			})
+
+		});
+
 	return router;
 }
 
