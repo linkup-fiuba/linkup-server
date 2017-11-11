@@ -46,6 +46,7 @@ function create(router, config) {
 	router = createReportedRoutes(this.Users, config, router);
 	router = createUserDisabled(this.Users, router);
 	router = createBlockedRoutes(this.Users, router);
+	router = createPremiumRoutes(this.Users, router);
 	return router;
 }
 
@@ -312,6 +313,61 @@ function createReportedRoutes(Users, config, router) {
 				}
 			});
 		})
+
+	router.route('/usersReports')
+		.get(function(req,res) {
+			Users.getUsersReport(req.query, function(err, response) {
+				if (err) {
+					return res.status(500).json({
+						statusCode: 500,
+						data: err
+					});
+				}
+				if (!response) {
+					return res.status(404).json({
+						statusCode: 404,
+						data: "Error"
+					});	
+				} else {
+					var items = (response.length != undefined) ? response.length : 1;
+					var maxVal = (items > 0) ? (items-1) : 0;
+					var header = '0-'+maxVal+'/'+items;
+					res.setHeader('Content-Range', 'items '+header);
+			    	return res.status(200).json({
+						statusCode: 200,
+						data: response
+					});
+				}
+			});
+		})
+	return router;
+}
+
+function createPremiumRoutes(Users, router) {
+	router.route('/users/premium')
+		.post(function (req, res) {
+			Users.createPremium(req.body, function (err, response) {
+				if (err) {
+					return res.status(500).json({
+						statusCode: 500,
+						data: err
+					});
+				}
+				if (response != "OK") {
+					return res.status(404).json({
+						statusCode: 404,
+						data: response
+					});	
+				} else {
+			    	return res.status(200).json({
+						statusCode: 200,
+						data: response
+					});
+				}
+			})
+
+		});
+
 	return router;
 }
 
@@ -658,11 +714,11 @@ function createLikesRoutes(Likes, router) {
     				data: err
     			});
     		}
-    		
 	    	return res.json({
 				statusCode: 200,
 				data: reply
-			});
+			});	
+    	
     		
 		});
 	})
