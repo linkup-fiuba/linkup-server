@@ -100,6 +100,21 @@ function isMember(key, value, callback) {
 	})
 }
 
+function increment(key, callback) {
+	client.incr(key, function (err, reply) {
+		if (err) return callback(err, null);
+		return callback(null, true);
+	})
+}
+
+function decrement(key, callback) {
+	client.decr(key, function (err, reply) {
+		if (err) return callback(err, null);
+		return callback(null, true);
+	})
+
+}
+
 function keys(key, callback) {
 	client.keys(key, function (err, reply) {
 		if (err) return callback(err, null);
@@ -122,5 +137,7 @@ module.exports = {
 	getFromSet: getFromSet,
 	addToSet: addToSet,
 	keys: keys,
-	isMember: isMember
+	isMember: isMember,
+	increment: increment,
+	decrement: decrement
 }

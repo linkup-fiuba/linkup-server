@@ -13,8 +13,11 @@ function Users(config, Around, Link) {
 	this.getReport = getReport;
 	this.deleteReport = deleteReport;
 	this.deleteReports = deleteReports;
+	this.closeReport = closeReport;
+	this.closeReports = closeReports;
 	this.getReports = getReports;
 	this.getReportedUsers = getReportedUsers;
+	this.getUsersReport = getUsersReport;
 	this.parseUserForElasticSearch = parseUserForElasticSearch;
 	this.getUsers = getUsers;
 	this.getBlockedUsers = getBlockedUsers;
@@ -22,6 +25,7 @@ function Users(config, Around, Link) {
 	this.unblockUser = unblockUser;
 	this.enableUser = enableUser;
 	this.disableUser = disableUser;
+	this.createPremium = createPremium;
 }
 
 function createUsersController(config, Around, Link) {
@@ -50,39 +54,40 @@ function getUsers(queryParams, callback) {
 			
 		} else {
 			config.redisLib.keys(config.usersKey+'*', function (err, keysUser) {
-			var users = [];
-			config.async.each(keysUser, function (key, callbackIt) {
-				config.redisLib.getHash(key, function(err,response) {
-					if (err) return callback(err, null);
-					if (response) {
-						var user = {
-							id: response.id,
-							name: response.name,
-							birthday: response.birthday,
-							age: response.age,
-							picture: response.picture,
-							likes: JSON.parse(response.likes),
-							gender: response.gender,
-							education: JSON.parse(response.education),
-							description: response.description,
-							pictures: JSON.parse(response.pictures),
-							location: JSON.parse(response.location),
-							disable: (response.disable != undefined) ? response.disable : false
+				var users = [];
+				config.async.each(keysUser, function (key, callbackIt) {
+					config.redisLib.getHash(key, function(err,response) {
+						if (err) return callback(err, null);
+						if (response) {
+							var user = {
+								id: response.id,
+								name: response.name,
+								birthday: response.birthday,
+								age: response.age,
+								picture: response.picture,
+								likes: JSON.parse(response.likes),
+								gender: response.gender,
+								education: JSON.parse(response.education),
+								description: response.description,
+								pictures: JSON.parse(response.pictures),
+								location: JSON.parse(response.location),
+								disable: (response.disable != undefined) ? response.disable : false,
+								premium: (response.premium != undefined) ? response.premium : false ,
+								createdAt: (response.createdAt != undefined) ? response.createdAt : null 
+							}
+							users.push(user);
+							callbackIt();
+						} else {
+							return callbackIt();
 						}
-						users.push(user);
-						callbackIt();
-					} else {
-						return callbackIt();
-					}
-				})
+					})
 
-				
-			}, function finish(err) {
-				return callback(null, users);
-			});
-		})
+					
+				}, function finish(err) {
+					return callback(null, users);
+				});
+			})
 		}
-		var userId = null;
 	} else {
 		config.redisLib.keys(config.usersKey+'*', function (err, keysUser) {
 			var users = [];
@@ -96,13 +101,15 @@ function getUsers(queryParams, callback) {
 							birthday: response.birthday,
 							age: response.age,
 							picture: response.picture,
-							likes: JSON.parse(response.likes),
+							likes: (response.likes != undefined) ? JSON.parse(response.likes) : [],
 							gender: response.gender,
-							education: JSON.parse(response.education),
+							education: (response.education) ? JSON.parse(response.education) : [],
 							description: response.description,
-							pictures: JSON.parse(response.pictures),
-							location: JSON.parse(response.location),
-							disable: (response.disable != undefined) ? response.disable : false
+							pictures: (response.pictures) ? JSON.parse(response.pictures) : [],
+							location: (response.location) ? JSON.parse(response.location) : [],
+							disable: (response.disable != undefined) ? response.disable : false,
+							premium: (response.premium != undefined) ? response.premium : false ,
+							createdAt: (response.createdAt != undefined) ? response.createdAt : null
 						}
 						users.push(user);
 						callbackIt();
@@ -136,7 +143,9 @@ function getUser(config, userId, callback) {
 				description: response.description,
 				pictures: JSON.parse(response.pictures),
 				location: JSON.parse(response.location),
-				disable: (response.disable != undefined) ? (response.disable) : false
+				disable: (response.disable != undefined) ? (response.disable) : false,
+				premium: (response.premium != undefined) ? response.premium : false ,
+				createdAt: (response.createdAt != undefined) ? response.createdAt : null 
 			}
 			return callback(null, user);
 		} else {
@@ -170,20 +179,28 @@ function createUser(userId, user, Preferences, callback) {
 						}
 						Preferences.createPreferences(userId, defaultPreferences, function (err, response) {
 							if (err) return callback(err, null);
-							var userModel = {
-								id: userId,
-								name: user.name,
-								birthday: user.birthday,
-								age: user.age,
-								picture: user.picture,
-								likes: JSON.parse(user.likes),
-								gender: user.gender,
-								education: JSON.parse(user.education),
-								description: user.description,
-								pictures: JSON.parse(user.pictures),
-								disable: user.disable
-							}
-							return callback(null, userModel);
+							config.redisLib.set(config.maxLikesKey+userId, config.maxLikesCommon, function (err, res) {
+								if (err) return callback(err, null);
+								var userModel = {
+									id: userId,
+									name: user.name,
+									birthday: user.birthday,
+									age: user.age,
+									picture: user.picture,
+									likes: JSON.parse(user.likes),
+									gender: user.gender,
+									education: JSON.parse(user.education),
+									description: user.description,
+									pictures: JSON.parse(user.pictures),
+									disable: user.disable,
+									premium: user.premium,
+									createdAt: user.createdAt
+								}
+
+								return callback(null, userModel);
+							})
+
+							
 							
 						})
 					});
@@ -261,7 +278,6 @@ function deleteUser(userId, callbackDelete) {
 } 
 
 function updateFieldUser(config, user, userUpdate, cbUpdate) {
-	console.log(userUpdate);
 	config.async.forEach(Object.keys(userUpdate), function (userField, callback){ 
 	    if (userUpdate[userField] instanceof Array || userUpdate[userField] instanceof Object) {
 	    	userUpdate[userField] = JSON.stringify(userUpdate[userField]);
@@ -312,7 +328,9 @@ function parseUser(facebookUser, callbackUser) {
 			education: JSON.stringify(education),
 			description: "",
 			pictures: JSON.stringify([]),
-			disable: false
+			disable: false,
+			premium: false,
+			createdAt: Date.now()
 		}
 		
 	    return callbackUser(user);
@@ -331,7 +349,8 @@ function reportUser(userId, userBody, callback) {
 				userIdReporter: userBody.userIdReporter,
 				userId: userId,
 				type: userBody.reason,
-				reason: (userBody.reason != undefined) ? userBody.reason : "default"
+				reason: (userBody.reason != undefined) ? userBody.reason : "default",
+				status: "open"
 			}			
 		} else {
 			var reportedUser = {
@@ -340,7 +359,8 @@ function reportUser(userId, userBody, callback) {
 				userIdReporter: userBody.userIdReporter,
 				userId: userId,
 				type: "Otro",
-				reason: (userBody.reason != undefined) ? userBody.reason : "default"
+				reason: (userBody.reason != undefined) ? userBody.reason : "default",
+				status: "open"
 			}
 		}
 
@@ -375,13 +395,28 @@ function getReport(reportId, callback) {
 					userIdReporter: reportResponse.userIdReporter,
 					userId: reportResponse.userId,
 					type: reportResponse.type,
-					reason: reportResponse.reason
+					reason: reportResponse.reason,
+					status: (reportResponse.status != undefined) ? reportResponse.status : 'open'
 				};
 				return callback(null, report);
 			})
 		}
 	} )
 
+}
+
+function closeReport(reportId, callback) {
+	var config = this.config;
+	config.redisLib.keys(config.reportedUserKey+'*'+reportId, function (err, response) {
+		if (!response || response.length == 0) {
+			return callback(null, []);
+		} else {
+			config.redisLib.setHashField(response[0], 'status', 'closed', function(err, reportResponse) {
+				if (err) return callback(err, null);
+				return callback(null, true);
+			})
+		}
+	} )
 }
 
 function deleteReport(reportId, callback) {
@@ -416,6 +451,24 @@ function deleteReports(config, userId, callback) {
 
 }
 
+function closeReports(config, userId, callback) {
+	config.redisLib.removeFromSet(config.reportedKey, userId, function (err, response) {
+		if (err) return callback(err, null);
+		config.redisLib.keys(config.reportedUserKey+userId+'*', function (err, keysUser) {
+			config.async.each(keysUser, function (key, cbIt) {
+				config.redisLib.setHashField(key, 'status', 'closed', function(err, response) {
+					if (err) return cbIt(err, null);
+					return cbIt();
+				})
+			}, function finish(err) {
+				if (err) return callback(err, null);
+				return callback(null, true);
+			});
+		})
+	})
+
+}
+
 function getReports(config, userId, callback) {
 	config.redisLib.keys(config.reportedUserKey+userId+'*', function (err, keysUser) {
 		if (err) return callback(err, null);
@@ -429,7 +482,8 @@ function getReports(config, userId, callback) {
 					userIdReporter: response.userIdReporter,
 					userId: response.userId,
 					type: response.type,
-					reason: response.reason
+					reason: response.reason,
+					status: (response.status != undefined) ? response.status : 'open'
 				};
 				reports.push(userReported);
 				return cbIt();
@@ -471,7 +525,8 @@ function getReportedUsers(queryParams, callback) {
 									userIdReporter: response.userIdReporter,
 									userId: response.userId,
 									type: response.type,
-									reason: response.reason
+									reason: response.reason,
+									status: (response.status != undefined) ? response.status : 'open'
 								};
 								usersReported.push(userReported);
 								return cbIt();
@@ -504,7 +559,8 @@ function getReportedUsers(queryParams, callback) {
 								userIdReporter: response.userIdReporter,
 								userId: response.userId,
 								type: response.type,
-								reason: response.reason
+								reason: response.reason,
+								status: (response.status != undefined) ? response.status : 'open'
 							};
 							usersReported.push(userReported);
 							return cbIt();
@@ -516,7 +572,7 @@ function getReportedUsers(queryParams, callback) {
 				})
 
 			}, function finish(err) {
-				if (err) return callback(err, null);
+				if (err) return calcrealback(err, null);
 				return callback(null, usersReported);
 			});
 		})
@@ -758,7 +814,7 @@ function disableUser(userId, callback) {
 }
 
 function enableUser(userId, callback) {
-		var config = this.config;
+	var config = this.config;
 	config.async.waterfall([
 	    function enableLink(cb) {
 	    	config.redisLib.keys(config.linkKey+'*'+userId, function(err, aroundKeyIds) {
@@ -800,6 +856,203 @@ function enableUser(userId, callback) {
 	});
 }
 
+function getUsersReport(queryParams, callback) {
+	var config = this.config;
+	var dateFrom = undefined;
+	var dateTo = undefined;
+	//tenemos filtro por fechas
+	if (Object.keys(queryParams).length != 0) {
+		config.async.waterfall([
+		    function parseParams(cb) {
+		    	if (queryParams.dateFrom != undefined) {
+					dateFrom = queryParams.dateFrom;
+				} else {
+					//01/01/2000
+					dateFrom = 946684800;
+				}
+				if (queryParams.dateTo != undefined) {
+					dateTo = queryParams.dateTo;
+				} else {
+					dateTo = Date.now()
+				}
+				return cb(null, dateFrom, dateTo);
+		    },
+		    function getByDate(dateFrom, dateTo, cb) {
+		    	getUsersReportsByDate(config, dateFrom, dateTo, function (err, response) {
+					if (err) return cb(err, null);
+					return cb(null, response);
+				})
+		    }
+		], function (error, response) {
+		    if (error) {
+		    	return callback(error, null);
+		    }
+		    return callback(null, response);
+		});
+
+
+
+	} else {
+		//sin filtro por fechas
+		// 01/01/2000
+		getUsersReportsByDate(config, 946684800, Date.now(), function (err, response) {
+			if (err) return callback(err, null);
+			return callback(null, response);
+		})
+
+	}
+}
+
+function getUsersReportsByDate(config, dateFrom, dateTo, callback) {
+	//users premium and common
+	var results = [];
+	console.log("FROM");
+	console.log(dateFrom);
+	console.log("TO");
+	console.log(dateTo);
+
+	var users = [];
+	config.redisLib.keys(config.usersKey+'*', function (err, keysUser) {
+		config.async.each(keysUser, function (key, callbackIt) {
+			config.redisLib.getHash(key, function(err,response) {
+				if (err) return callback(err, null);
+				if (response) {
+					var user = {
+						id: response.id,
+						premium: (response.premium != undefined) ? response.premium : false ,
+						createdAt: (response.createdAt != undefined) ? response.createdAt : null					}
+					users.push(user);
+					callbackIt();
+				} else {
+					return callbackIt();
+				}
+			})
+
+			
+		}, function finish(err) {
+			var results = [];
+			var countUsers = users.length;
+			var groupedUsers = config.groupByTime(users, 'createdAt', 'day');
+			config.async.forEach(Object.keys(groupedUsers), function (day, cbItOne) {
+				var commonUsers = 0;
+				var premiumUsers = 0;
+				if (day > dateFrom && day < dateTo) {
+					config.async.forEach(groupedUsers[day], function (user, cbItTwo) {
+						if (user.premium == "true") {
+							if (user.createdAt > dateFrom && user.createdAt < dateTo) {
+								premiumUsers++;
+								return cbItTwo();
+							} else {
+								return cbItTwo();
+							}
+						} else if (user.createdAt > dateFrom && user.createdAt < dateTo){
+							commonUsers++;
+							return cbItTwo();
+						} else {
+							return cbItTwo();
+						}
+						
+					}, function finish(err) {
+						var byDay = {
+							date: day,
+							commonUsers: commonUsers,
+							premiumUsers: premiumUsers
+						}
+						results.push(byDay);
+						return cbItOne();
+						
+					});
+				} else {
+					return cbItOne();
+				}
+			}, function finish(err) {
+				
+				results = results.sort(compare);
+				results['totalUsers'] = countUsers;
+				console.log(results);
+				return callback(null, results);
+				
+			});
+		});
+	})
+
+}
+
+function compare(a,b) {
+  if (a.date < b.date)
+    return -1;
+  if (a.date > b.date)
+    return 1;
+  return 0;
+}
+
+
+function groupUsersByDate(users, callback) {
+	var byDay = {};
+	var groupDay = function (value, index, array)
+	{
+	    var d = new Date(parseInt(value['createdAt']));
+	    console.log("date by day");
+		console.log(value['createdAt']);
+	    console.log(d);
+	    d = Math.floor(d.getTime()/(1000*60*60*24));
+	    byDay[d]=byDay[d]||[];
+	    byDay[d].push(value);
+	}
+
+	users.map(groupDay);
+	//console.log("ORDENADOS");
+	//console.log(byDay);
+	//console.log(byDayPremium);
+	
+	return callback(null, byDay);
+}
+
+
+
+function createPremium(userBody, callback) {
+	var config = this.config;
+	var maxLikes = (config.maxLikesPremium != undefined) ? config.maxLikesPremium : config.maxLikesCommon
+	if (userBody.userId == undefined) {
+		return callback(null, "Empty User Id");
+	} else {
+		config.async.waterfall([
+			function setMaxLikes(cb) {
+				config.redisLib.set(config.maxLikesKey+userBody.userId, maxLikes, function (err, res) {
+					if (err) return cb(err);
+					return cb(null);
+				})
+			},
+			function updateUser(cb) {
+				config.redisLib.setHashField(config.usersKey+userBody.userId, 'premium', true, function (err, response) {
+					if (err) return cb(err);
+					return cb(null);
+				})
+			},
+			function updateDate(cb) {
+				config.redisLib.setHashField(config.usersKey+userBody.userId, 'createdAt', Date.now(), function (err, response) {
+					if (err) return cb(err);
+					return cb(null);
+				})
+			},
+			function addToPremiumList(cb) {
+				config.redisLib.addToSet(config.premiumKey, userBody.userId, function (err, response) {
+					if (err) return cb(err);
+					return cb(null);
+				})
+			}
+
+	], function (error) {
+	    if (error) {
+	    	return callback(error, null);
+	    }
+	    return callback(null, "OK");
+	});
+		
+	}
+
+}
+
 
 Array.prototype.contains = function(element){
     return this.indexOf(element) > -1;
@@ -811,6 +1064,7 @@ module.exports = {
 	createUser: createUser,
 	updateUser: updateUser,
 	deleteUser: deleteUser,
+	createPremium: createPremium,
 	parseUser: parseUser,
 	reportUser: reportUser,
 	getReport: getReport,
@@ -818,6 +1072,9 @@ module.exports = {
 	deleteReports: deleteReports,
 	getReports: getReports,
 	getReportedUsers: getReportedUsers,
+	closeReport: closeReport,
+	closeReports: closeReports,
+	getUsersReport: getUsersReport,
 	parseUserForElasticSearch: parseUserForElasticSearch,
 	getUsers: getUsers,
 	blockUser: blockUser,
