@@ -494,7 +494,7 @@ function getUsersAround(config, userId, userIdsAround, userIdsAroundShown, cbUse
 				})
 
 			}, function finish(err) {
-				users = users.sort(compare);
+				users = users.sort(config.helpers.compareByDistanceASC);
 				console.log("DEBUG: USERS SORTED");
 				console.log(users);
 	    		return callback(null, users);
@@ -508,14 +508,6 @@ function getUsersAround(config, userId, userIdsAround, userIdsAroundShown, cbUse
 	    return cbUserAround(null, users);
 	});
 
-}
-
-function compare(a,b) {
-  if (a.distance < b.distance)
-    return -1;
-  if (a.distance > b.distance)
-    return 1;
-  return 0;
 }
 
 Array.prototype.diff = function(a) {

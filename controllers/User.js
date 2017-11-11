@@ -967,7 +967,7 @@ function getUsersReportsByDate(config, dateFrom, dateTo, callback) {
 				}
 			}, function finish(err) {
 				
-				results = results.sort(compare);
+				results = results.sort(config.helpers.compareByDateASC);
 				results['totalUsers'] = countUsers;
 				console.log(results);
 				return callback(null, results);
@@ -978,13 +978,7 @@ function getUsersReportsByDate(config, dateFrom, dateTo, callback) {
 
 }
 
-function compare(a,b) {
-  if (a.date < b.date)
-    return -1;
-  if (a.date > b.date)
-    return 1;
-  return 0;
-}
+
 
 
 function groupUsersByDate(users, callback) {

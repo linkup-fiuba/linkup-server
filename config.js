@@ -2,6 +2,7 @@ var redisLib 			= require('./redisLib');
 var elasticSearchLib 	= require('./elasticSearchLib');
 var async 				= require('async');
 var groupByTime 		= require('group-by-time');
+var helpers 			= require('./helpers');
 const uuidv1 			= require('uuid/v1');
 
 var config = {};
@@ -31,6 +32,7 @@ config.shown = '_shown';
 config.bothKey = 'both';
 config.redisLib = redisLib;
 config.groupByTime = groupByTime;
+config.helpers = helpers;
 config.async = async.default;
 config.uuidv1 = uuidv1;
 config.reportOptions = [
