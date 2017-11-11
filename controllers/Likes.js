@@ -69,7 +69,11 @@ function setSuperLike(userId, userIdLiked, callback) {
 	config.redisLib.get(config.maxLikesKey+userId, function (err, response) {
 		if (err) return callback(err, null);
 		if (response == 0) {
-			return callback(null, "Max superlikes reached");
+      var responseLike = {
+        link: false,
+				extra: "Max superlikes reached"
+      };
+			return callback(null, responseLike);
 		} else {
 			//agrego el userIdLiked a likes_userId. Luego chequeo en likes_userIdLiked si esta el userId.
 			// SI está hay un nuevo link. 
@@ -121,7 +125,8 @@ function setSuperLike(userId, userIdLiked, callback) {
 											config.redisLib.setHash(config.aroundKey+userIdLiked+':'+userId, userModel, function (err, responseSave) {
 												if (err) return cb(err, null);
 												var responseLike = {
-													link: false
+													link: false,
+													extra: ""
 												}
 												return callback(null, responseLike);
 							
