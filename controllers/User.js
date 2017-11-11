@@ -955,6 +955,7 @@ function getUsersReportsByDate(config, dateFrom, dateTo, callback) {
 						
 					}, function finish(err) {
 						var byDay = {
+							id: day,
 							date: day,
 							commonUsers: commonUsers,
 							premiumUsers: premiumUsers
