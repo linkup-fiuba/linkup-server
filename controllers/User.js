@@ -908,9 +908,9 @@ function getUsersReportsByDate(config, dateFrom, dateTo, callback) {
 	//users premium and common
 	var results = [];
 	console.log("FROM");
-	console.log(dateFrom);
+	console.log(new Date(dateFrom));
 	console.log("TO");
-	console.log(dateTo);
+	console.log(new Date(dateTo));
 
 	var users = [];
 	config.redisLib.keys(config.usersKey+'*', function (err, keysUser) {
@@ -959,6 +959,9 @@ function getUsersReportsByDate(config, dateFrom, dateTo, callback) {
 							commonUsers: commonUsers,
 							premiumUsers: premiumUsers
 						}
+						console.log("DAY");
+						console.log(new Date(parseInt(day)));
+						console.log(byDay);
 						results.push(byDay);
 						return cbItOne();
 						
@@ -970,7 +973,6 @@ function getUsersReportsByDate(config, dateFrom, dateTo, callback) {
 				
 				results = results.sort(config.helpers.compareByDateASC);
 				results['totalUsers'] = countUsers;
-				console.log(results);
 				return callback(null, results);
 				
 			});
