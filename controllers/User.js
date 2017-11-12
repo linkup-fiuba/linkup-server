@@ -861,18 +861,20 @@ function getUsersReport(queryParams, callback) {
 	var config = this.config;
 	var dateFrom = undefined;
 	var dateTo = undefined;
+	var filter = undefined;
 	//tenemos filtro por fechas
 	if (Object.keys(queryParams).length != 0) {
 		config.async.waterfall([
 		    function parseParams(cb) {
-		    	if (queryParams.dateFrom != undefined) {
-					dateFrom = queryParams.dateFrom;
+		    	filter = JSON.parse(queryParams.filter); 
+				if (filter != undefined && filter.dateFrom != undefined) {
+					dateFrom = filter.dateFrom;
 				} else {
 					//01/01/2000
 					dateFrom = 946684800;
 				}
-				if (queryParams.dateTo != undefined) {
-					dateTo = queryParams.dateTo;
+				if (filter != undefined && filter.dateTo != undefined) {
+					dateTo = filter.dateTo;
 				} else {
 					dateTo = Date.now()
 				}
