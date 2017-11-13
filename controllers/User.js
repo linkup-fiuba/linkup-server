@@ -878,8 +878,24 @@ function getUsersReport(queryParams, callback) {
 				}
 				return cb(null, dateFrom, dateTo);
 		    },
-		    function getByDate(dateFrom, dateTo, cb) {
-		    	getUsersReportsByDate(config, dateFrom, dateTo, function (err, response) {
+		    function orderBy(dateFrom, dateTo, cb) {
+		    	var sort = (queryParams.sort != undefined) ? queryParams.sort : [];
+				sort = sort.replace(/'/g, '"');
+				sort = JSON.parse(sort);
+		    	var order = 'asc';
+		    	config.async.each(sort, function (key, cbIt) {
+		    		if (key == 'desc') {
+		    			order = 'desc';
+		    			return cb(null, dateFrom,dateTo, order);
+		    		} else {
+		    			return cbIt();
+		    		}
+		    	}, function finish(error) {
+		    		return cb(null, dateFrom, dateTo, order);
+		    	})
+		    },
+		    function getByDate(dateFrom, dateTo, order, cb) {
+		    	getUsersReportsByDate(config, dateFrom, dateTo, order, function (err, response) {
 					if (err) return cb(err, null);
 					return cb(null, response);
 				})
@@ -896,7 +912,7 @@ function getUsersReport(queryParams, callback) {
 	} else {
 		//sin filtro por fechas
 		// 01/01/2000
-		getUsersReportsByDate(config, 946684800, Date.now(), function (err, response) {
+		getUsersReportsByDate(config, 946692000000, Date.now(), 'asc', function (err, response) {
 			if (err) return callback(err, null);
 			return callback(null, response);
 		})
@@ -904,13 +920,13 @@ function getUsersReport(queryParams, callback) {
 	}
 }
 
-function getUsersReportsByDate(config, dateFrom, dateTo, callback) {
+function getUsersReportsByDate(config, dateFrom, dateTo, order, callback) {
 	//users premium and common
 	var results = [];
 	console.log("FROM");
-	console.log(new Date(dateFrom));
+	console.log(new Date(parseInt(dateFrom)));
 	console.log("TO");
-	console.log(new Date(dateTo));
+	console.log(new Date(parseInt(dateTo)));
 
 	var users = [];
 	config.redisLib.keys(config.usersKey+'*', function (err, keysUser) {
@@ -934,9 +950,13 @@ function getUsersReportsByDate(config, dateFrom, dateTo, callback) {
 			var results = [];
 			var countUsers = users.length;
 			var groupedUsers = config.groupByTime(users, 'createdAt', 'day');
+			console.log("groupedUsers");
+			console.log(groupedUsers);
 			config.async.forEach(Object.keys(groupedUsers), function (day, cbItOne) {
 				var commonUsers = 0;
 				var premiumUsers = 0;
+				console.log("DAY");
+				console.log(new Date(parseInt(day)));
 				if (day > dateFrom && day < dateTo) {
 					config.async.forEach(groupedUsers[day], function (user, cbItTwo) {
 						if (user.premium == "true") {
@@ -959,9 +979,6 @@ function getUsersReportsByDate(config, dateFrom, dateTo, callback) {
 							commonUsers: commonUsers,
 							premiumUsers: premiumUsers
 						}
-						console.log("DAY");
-						console.log(new Date(parseInt(day)));
-						console.log(byDay);
 						results.push(byDay);
 						return cbItOne();
 						
@@ -970,10 +987,19 @@ function getUsersReportsByDate(config, dateFrom, dateTo, callback) {
 					return cbItOne();
 				}
 			}, function finish(err) {
-				
-				results = results.sort(config.helpers.compareByDateASC);
-				results['totalUsers'] = countUsers;
-				return callback(null, results);
+				if (order == 'desc') {
+					results = results.sort(config.helpers.compareByDateDESC);
+					console.log("DESCENDENTE");
+					console.log(results);
+					results['totalUsers'] = countUsers;
+					return callback(null, results);
+				} else {
+					results = results.sort(config.helpers.compareByDateASC);
+					results['totalUsers'] = countUsers;
+					console.log("ASCENDENTE");
+					console.log(results);
+					return callback(null, results);
+				}
 				
 			});
 		});
@@ -981,6 +1007,17 @@ function getUsersReportsByDate(config, dateFrom, dateTo, callback) {
 
 }
 
+function formatDate(date) {
+    var d = new Date(parseInt(date)),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
+
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+
+    return [year, month, day].join('-');
+}
 
 
 
