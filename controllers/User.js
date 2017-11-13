@@ -1003,7 +1003,7 @@ function getUsersReportsByDate(config, dateFrom, dateTo, order, callback) {
 				}
 			}, function finish(err) {
 				if (order == 'desc') {
-					results = results.sort(config.helpers.compareByDateDESC);
+					results = results.sort(config.helpers.compareByDateASC);
 					console.log("DESCENDENTE");
 					console.log(results);
 					results['totalUsers'] = countUsers;
