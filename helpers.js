@@ -41,11 +41,26 @@ function compareByDateDESC(a,b) {
   return 0;
 }
 
+function formatDate(date) {
+    var d = new Date(parseInt(date)),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
+
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+
+    return [year, month, day].join('-');
+}
+
+
 
 module.exports = {
 	compareByDistanceASC: compareByDistanceASC,
 	compareByDistanceDESC: compareByDistanceDESC,
 	compareByDateASC: compareByDateASC,
-	compareByDateDESC: compareByDateDESC
+	compareByDateDESC: compareByDateDESC,
+	compareBy: compareBy,
+	formatDate: formatDate
 
 }

@@ -520,17 +520,21 @@ function getReportedUsers(queryParams, callback) {
 						config.async.each(keysUser, function (key, cbIt) {
 							config.redisLib.getHash(key, function(err, response) {
 								if (err) return cbIt(err, null);
-								var userReported = {
-									id: response.id,
-									date: response.date,
-									userIdReporter: response.userIdReporter,
-									userId: response.userId,
-									type: response.type,
-									reason: response.reason,
-									status: (response.status != undefined) ? response.status : 'open'
-								};
-								usersReported.push(userReported);
-								return cbIt();
+								if (response.status != undefined && response.status != 'closed') {
+									var userReported = {
+										id: response.id,
+										date: response.date,
+										userIdReporter: response.userIdReporter,
+										userId: response.userId,
+										type: response.type,
+										reason: response.reason,
+										status: (response.status != undefined) ? response.status : 'open'
+									};
+									usersReported.push(userReported);
+									return cbIt();	
+								} else {
+									return cbIt();	
+								}
 							})
 							
 						}, function finish(err) {
@@ -554,17 +558,21 @@ function getReportedUsers(queryParams, callback) {
 					config.async.each(keysUser, function (key, cbIt) {
 						config.redisLib.getHash(key, function(err, response) {
 							if (err) return cbIt(err, null);
-							var userReported = {
-								id: response.id,
-								date: response.date,
-								userIdReporter: response.userIdReporter,
-								userId: response.userId,
-								type: response.type,
-								reason: response.reason,
-								status: (response.status != undefined) ? response.status : 'open'
-							};
-							usersReported.push(userReported);
-							return cbIt();
+							if (response.status != undefined && response.status != 'closed') {
+								var userReported = {
+									id: response.id,
+									date: response.date,
+									userIdReporter: response.userIdReporter,
+									userId: response.userId,
+									type: response.type,
+									reason: response.reason,
+									status: (response.status != undefined) ? response.status : 'open'
+								};
+								usersReported.push(userReported);
+								return cbIt();
+							} else {
+								return cbIt();
+							}
 						})
 						
 					}, function finish(err) {
@@ -801,7 +809,7 @@ function disableUser(userId, callback) {
 			});
 	    },
 	    function deleteReportsOfUser(cb) {
-	    	deleteReports(config, userId, function (err, response) {
+	    	closeReports(config, userId, function (err, response) {
 	    		if (err) return cb(err, null);
 	    		return cb(null);
 	    	})
@@ -1009,20 +1017,6 @@ function getUsersReportsByDate(config, dateFrom, dateTo, order, callback) {
 	})
 
 }
-
-function formatDate(date) {
-    var d = new Date(parseInt(date)),
-        month = '' + (d.getMonth() + 1),
-        day = '' + d.getDate(),
-        year = d.getFullYear();
-
-    if (month.length < 2) month = '0' + month;
-    if (day.length < 2) day = '0' + day;
-
-    return [year, month, day].join('-');
-}
-
-
 
 function groupUsersByDate(users, callback) {
 	var byDay = {};
