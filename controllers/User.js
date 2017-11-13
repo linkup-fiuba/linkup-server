@@ -962,9 +962,13 @@ function getUsersReportsByDate(config, dateFrom, dateTo, order, callback) {
 			var groupedUsers = config.groupByTime(users, 'createdAt', 'day');
 			console.log("groupedUsers");
 			console.log(groupedUsers);
-			config.async.forEach(Object.keys(groupedUsers), function (day, cbItOne) {
-				var commonUsers = 0;
-				var premiumUsers = 0;
+			var keysUsers = Object.keys(groupedUsers);
+			keysUsers = keysUsers.sort(config.helpers.compareASC);
+			console.log("keysUsers sort");
+			console.log(keysUsers);
+			var commonUsers = 0;
+			var premiumUsers = 0;
+			config.async.forEach(keysUsers, function (day, cbItOne) {
 				console.log("DAY");
 				console.log(new Date(parseInt(day)));
 				if (day > dateFrom && day < dateTo) {

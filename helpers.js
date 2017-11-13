@@ -53,6 +53,14 @@ function formatDate(date) {
     return [year, month, day].join('-');
 }
 
+function compareASC(a,b) {
+	  if (a < b)
+	    return -1;
+	  if (a > b)
+	    return 1;
+	  return 0;
+}
+
 
 
 module.exports = {
@@ -61,6 +69,7 @@ module.exports = {
 	compareByDateASC: compareByDateASC,
 	compareByDateDESC: compareByDateDESC,
 	compareBy: compareBy,
-	formatDate: formatDate
+	formatDate: formatDate,
+	compareASC: compareASC
 
 }
