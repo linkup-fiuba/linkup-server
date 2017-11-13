@@ -95,7 +95,8 @@ function setSuperLike(userId, userIdLiked, callback) {
 									Link.createLink(userId, userIdLiked, function (err, response) {
 										if (err) return callback(err, null);
 										var responseLike = {
-											link: response
+											link: response,
+                      extra: ""
 										}
 										return callback(null, responseLike);
 									});
