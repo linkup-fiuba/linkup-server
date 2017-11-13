@@ -68,7 +68,7 @@ function setSuperLike(userId, userIdLiked, callback) {
 	var Link = this.Link;
 	config.redisLib.get(config.maxLikesKey+userId, function (err, response) {
 		if (err) return callback(err, null);
-		if (response == 0) {
+		if (response <= 0) {
       var responseLike = {
         link: false,
 				extra: "Max superlikes reached"
